@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gopali & Co | Essentials</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.min.mjs" type="module"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:Inter,Arial,sans-serif;background:#f5f6f8;color:#111}
+.navbar{height:80px;background:rgba(255,255,255,.95);border-bottom:1px solid #e5e7eb;display:flex;align-items:center;justify-content:space-between;padding:0 6%;position:sticky;top:0;z-index:100;backdrop-filter:blur(15px)}
+.brand{display:flex;align-items:center;gap:12px}.brand-mark{width:42px;height:42px;background:#111;color:#fff;border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:20px}.brand-name{font-size:18px;font-weight:700}.brand-subtitle{font-size:9px;letter-spacing:2px;color:#888}
+.dropdown{position:relative}.dropdown-button{background:#fff;border:1px solid #ddd;border-radius:10px;padding:11px 18px;font-weight:600;cursor:pointer}.dropdown-menu{position:absolute;right:0;top:50px;width:240px;background:#fff;border:1px solid #ddd;border-radius:14px;padding:8px;box-shadow:0 20px 50px rgba(0,0,0,.12);opacity:0;visibility:hidden;transform:translateY(-8px);transition:.2s}.dropdown:hover .dropdown-menu{opacity:1;visibility:visible;transform:translateY(0)}.tool-option{width:100%;border:0;background:transparent;padding:13px;text-align:left;border-radius:8px;cursor:pointer;font-size:14px}.tool-option:hover{background:#f0f1f3}
+.hero{min-height:580px;background:#fff;display:flex;align-items:center;padding:80px 8%;position:relative;overflow:hidden}.hero-content{max-width:650px;position:relative;z-index:2}.eyebrow{font-size:11px;letter-spacing:2.5px;font-weight:700;color:#888;margin-bottom:20px}.hero h1{font-size:clamp(48px,6vw,82px);line-height:.98;letter-spacing:-4px;margin-bottom:28px}.hero h1 span{color:#999}.hero p{color:#777;font-size:18px;max-width:520px;margin-bottom:30px}.primary-button{background:#111;color:#fff;border:0;border-radius:9px;padding:15px 24px;cursor:pointer;font-weight:600}.primary-button:hover{transform:translateY(-2px)}
+.hero-decoration{position:absolute;right:5%;width:430px;height:430px}.orb{position:absolute;border-radius:50%}.orb-one{width:300px;height:300px;background:#e7e8eb;top:50px;left:70px}.orb-two{width:170px;height:170px;background:#d4d6da;right:0;bottom:20px}.floating-card{position:absolute;background:rgba(255,255,255,.9);border:1px solid #ddd;border-radius:15px;padding:20px 25px;box-shadow:0 20px 50px rgba(0,0,0,.1)}.floating-card span{display:block;font-size:24px;font-weight:800}.floating-card small{color:#888}.card-one{top:100px;left:30px;transform:rotate(-8deg)}.card-two{right:10px;bottom:70px;transform:rotate(7deg)}
+.tools-section{max-width:1400px;margin:auto;padding:100px 8%}.section-heading{display:flex;justify-content:space-between;margin-bottom:40px}.section-label{font-size:11px;letter-spacing:2.5px;font-weight:700;color:#888;margin-bottom:15px}.section-heading h2{font-size:48px;letter-spacing:-2px}.section-heading p{color:#777;margin-top:10px}.tool-number{font-size:80px;font-weight:800;color:#e0e1e3}
+.converter-card{background:#fff;border:1px solid #e3e4e6;border-radius:20px;padding:30px}.upload-area{min-height:330px;border:2px dashed #d3d5d8;border-radius:15px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;transition:.2s}.upload-area.dragging{background:#f0f1f3;border-color:#111}.upload-icon{width:60px;height:60px;border-radius:50%;background:#111;color:#fff;display:flex;align-items:center;justify-content:center;font-size:28px;margin-bottom:18px}.upload-area h3{font-size:20px;margin-bottom:6px}.upload-area p{color:#888;margin-bottom:20px}.browse-button{background:#111;color:#fff;border:0;padding:12px 22px;border-radius:8px;cursor:pointer;font-weight:600}.upload-note{margin-top:20px;color:#aaa;font-size:11px}
+.file-info{display:none;align-items:center;margin-top:20px;padding:15px;background:#f7f7f8;border-radius:12px}.file-info.visible{display:flex}.file-icon{width:48px;height:48px;background:#111;color:#fff;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;margin-right:14px}.file-details{flex:1}.file-details strong,.file-details span{display:block}.file-details strong{font-size:14px}.file-details span{font-size:12px;color:#888}.remove-file{border:0;background:transparent;font-size:25px;cursor:pointer}
+.progress-container{display:none;margin-top:20px}.progress-container.visible{display:block}.progress-header{display:flex;justify-content:space-between;font-size:12px;margin-bottom:8px}.progress-bar{height:7px;background:#e6e7e9;border-radius:10px;overflow:hidden}#progressFill{height:100%;width:0%;background:#111;transition:width .2s}
+.convert-button{display:none;width:100%;margin-top:20px;background:#111;color:#fff;border:0;border-radius:9px;padding:15px;font-weight:600;cursor:pointer}.convert-button.visible{display:block}.convert-button:disabled{opacity:.5}
+.results-section{display:none;margin-top:70px}.results-section.visible{display:block}.results-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:25px}.results-header h3{font-size:30px}.download-all{background:#111;color:#fff;border:0;padding:11px 18px;border-radius:8px;cursor:pointer;font-weight:600}.results-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:20px}.result-card{background:#fff;border:1px solid #e3e4e6;border-radius:14px;overflow:hidden}.image-preview{background:#f0f1f3;aspect-ratio:1/1.35;padding:12px;display:flex;align-items:center;justify-content:center}.image-preview img{max-width:100%;max-height:100%;object-fit:contain;box-shadow:0 5px 20px rgba(0,0,0,.08)}.result-info{padding:13px;display:flex;justify-content:space-between;align-items:center}.result-info span{font-size:13px;font-weight:600}.result-info button{border:0;background:#111;color:#fff;padding:7px 11px;border-radius:6px;cursor:pointer}
+footer{border-top:1px solid #e5e7eb;background:#fff;padding:35px 8%;display:flex;justify-content:space-between;color:#999;font-size:12px}.footer-brand{color:#111;font-weight:700}
+@media(max-width:800px){.hero-decoration{opacity:.25;right:-150px}.hero h1{font-size:54px}.section-heading h2{font-size:38px}.tool-number{font-size:50px}}
+@media(max-width:600px){.navbar{padding:0 20px}.hero{padding:70px 25px}.hero-decoration{display:none}.tools-section{padding:70px 20px}.section-heading{flex-direction:column;gap:20px}.converter-card{padding:15px}footer{flex-direction:column;gap:10px;text-align:center}}
+</style>
+</head>
+<body>
+<header class="navbar">
+<div class="brand"><div class="brand-mark">G</div><div><div class="brand-name">Gopali & Co</div><div class="brand-subtitle">ESSENTIALS</div></div></div>
+<div class="dropdown">
+<button class="dropdown-button">Essentials ▾</button>
+<div class="dropdown-menu"><button class="tool-option" onclick="scrollToTool()">📄 PDF to JPEG</button></div>
+</div>
+</header>
+
+<section class="hero">
+<div class="hero-content">
+<div class="eyebrow">GOPALI & CO • WORK ESSENTIALS</div>
+<h1>Work smarter.<br><span>Get things done faster.</span></h1>
+<p>Simple and powerful tools designed to speed up everyday work.</p>
+<button class="primary-button" onclick="scrollToTool()">Explore Essentials →</button>
+</div>
+<div class="hero-decoration">
+<div class="orb orb-one"></div><div class="orb orb-two"></div>
+<div class="floating-card card-one"><span>PDF</span><small>Document</small></div>
+<div class="floating-card card-two"><span>JPEG</span><small>Image</small></div>
+</div>
+</section>
+
+<section class="tools-section" id="tools">
+<div class="section-heading">
+<div><div class="section-label">ESSENTIALS • TOOL 01</div><h2>PDF to JPEG</h2><p>Convert PDF pages into high-quality JPEG images.</p></div>
+<div class="tool-number">01</div>
+</div>
+
+<div class="converter-card">
+<div class="upload-area" id="dropZone">
+<div class="upload-icon">↑</div>
+<h3>Drop your PDF here</h3>
+<p>or click below to browse your computer</p>
+<button class="browse-button" onclick="document.getElementById('pdfInput').click()">Choose PDF</button>
+<input type="file" id="pdfInput" accept="application/pdf" hidden>
+<div class="upload-note">Your PDF stays on your device. Nothing is uploaded to a server.</div>
+</div>
+
+<div class="file-info" id="fileInfo">
+<div class="file-icon">PDF</div>
+<div class="file-details"><strong id="fileName"></strong><span id="fileSize"></span></div>
+<button class="remove-file" onclick="removeFile()">×</button>
+</div>
+
+<div class="progress-container" id="progressContainer">
+<div class="progress-header"><span>Converting...</span><span id="progressText">0%</span></div>
+<div class="progress-bar"><div id="progressFill"></div></div>
+</div>
+
+<button class="convert-button" id="convertButton" onclick="convertPDF()">Convert to JPEG →</button>
+</div>
+
+<div class="results-section" id="resultsSection">
+<div class="results-header">
+<div><div class="section-label">COMPLETED</div><h3>Converted Pages</h3></div>
+<button class="download-all" onclick="downloadAll()">Download All</button>
+</div>
+<div class="results-grid" id="resultsGrid"></div>
+</div>
+</section>
+
+<footer>
+<div class="footer-brand">Gopali & Co</div>
+<div>Essentials • Internal Work Tools</div>
+<div>© 2026 Gopali & Co</div>
+</footer>
+
+<script type="module">
+import {getDocument,GlobalWorkerOptions} from "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.min.mjs";
+GlobalWorkerOptions.workerSrc="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.worker.min.mjs";
+
+let selectedFile=null;
+let convertedImages=[];
+
+const pdfInput=document.getElementById("pdfInput");
+const dropZone=document.getElementById("dropZone");
+
+pdfInput.addEventListener("change",function(){if(this.files.length>0)handleFile(this.files[0])});
+
+dropZone.addEventListener("dragover",function(e){e.preventDefault();dropZone.classList.add("dragging")});
+dropZone.addEventListener("dragleave",function(){dropZone.classList.remove("dragging")});
+dropZone.addEventListener("drop",function(e){
+e.preventDefault();dropZone.classList.remove("dragging");
+const file=e.dataTransfer.files[0];if(file)handleFile(file);
+});
+
+function handleFile(file){
+if(file.type!=="application/pdf"){alert("Please select a PDF file.");return}
+selectedFile=file;
+document.getElementById("fileName").textContent=file.name;
+document.getElementById("fileSize").textContent=formatBytes(file.size);
+document.getElementById("fileInfo").classList.add("visible");
+document.getElementById("convertButton").classList.add("visible");
+}
+
+window.convertPDF=async function(){
+if(!selectedFile){alert("Please select a PDF first.");return}
+convertedImages=[];
+const button=document.getElementById("convertButton");
+const progressContainer=document.getElementById("progressContainer");
+const progressFill=document.getElementById("progressFill");
+const progressText=document.getElementById("progressText");
+button.disabled=true;button.textContent="Converting...";
+progressContainer.classList.add("visible");
+
+try{
+const buffer=await selectedFile.arrayBuffer();
+const pdf=await getDocument({data:buffer}).promise;
+const total=pdf.numPages;
+
+for(let i=1;i<=total;i++){
+const page=await pdf.getPage(i);
+const viewport=page.getViewport({scale:2});
+const canvas=document.createElement("canvas");
+const context=canvas.getContext("2d");
+canvas.width=viewport.width;canvas.height=viewport.height;
+await page.render({canvasContext:context,viewport:viewport}).promise;
+const jpeg=canvas.toDataURL("image/jpeg",.92);
+convertedImages.push({page:i,data:jpeg});
+const progress=Math.round((i/total)*100);
+progressFill.style.width=progress+"%";
+progressText.textContent=progress+"%";
+}
+displayResults();
+}catch(error){console.error(error);alert("Unable to convert this PDF.")}
+
+button.disabled=false;button.textContent="Convert to JPEG →";
+};
+
+function displayResults(){
+const results=document.getElementById("resultsGrid");
+results.innerHTML="";
+convertedImages.forEach(function(image){
+const card=document.createElement("div");
+card.className="result-card";
+card.innerHTML=`<div class="image-preview"><img src="${image.data}" alt="Page ${image.page}"></div><div class="result-info"><span>Page ${image.page}</span><button onclick="downloadImage('${image.data}','page-${image.page}.jpg')">Download</button></div>`;
+results.appendChild(card);
+});
+document.getElementById("resultsSection").classList.add("visible");
+document.getElementById("resultsSection").scrollIntoView({behavior:"smooth"});
+}
+
+window.downloadImage=function(data,filename){
+const link=document.createElement("a");link.href=data;link.download=filename;link.click();
+};
+
+window.downloadAll=function(){
+convertedImages.forEach(function(image,index){
+setTimeout(function(){downloadImage(image.data,`page-${image.page}.jpg`)},index*200);
+});
+};
+
+window.removeFile=function(){
+selectedFile=null;convertedImages=[];pdfInput.value="";
+document.getElementById("fileInfo").classList.remove("visible");
+document.getElementById("convertButton").classList.remove("visible");
+document.getElementById("progressContainer").classList.remove("visible");
+document.getElementById("resultsSection").classList.remove("visible");
+};
+
+window.scrollToTool=function(){
+document.getElementById("tools").scrollIntoView({behavior:"smooth"});
+};
+
+function formatBytes(bytes){
+if(bytes===0)return"0 Bytes";
+const sizes=["Bytes","KB","MB","GB"];
+const i=Math.floor(Math.log(bytes)/Math.log(1024));
+return(Math.round(bytes/Math.pow(1024,i)*100)/100)+" "+sizes[i];
+}
+</script>
+</body>
+</html>
