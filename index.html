@@ -2,303 +2,482 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Gopali & Co | Essentials</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.min.mjs" type="module"></script>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Gopali & Co — Essentials</title>
 <style>
-*{box-sizing:border-box;margin:0;padding:0}
-:root{--black:#111;--white:#fff;--bg:#f6f7f9;--muted:#777;--border:#e5e7eb}
-body{font-family:Inter,Arial,sans-serif;background:var(--bg);color:var(--black);min-height:100vh}
-.navbar{height:80px;background:rgba(255,255,255,.96);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 6%;position:sticky;top:0;z-index:100;backdrop-filter:blur(16px)}
-.brand{display:flex;align-items:center;gap:12px}.brand-mark{width:42px;height:42px;background:#111;color:#fff;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:800}.brand-name{font-size:18px;font-weight:700}.brand-subtitle{font-size:9px;letter-spacing:2px;color:#888}
-.nav-menu{display:flex;align-items:center;gap:10px}.menu{position:relative}.menu-btn{background:#fff;border:1px solid #ddd;border-radius:10px;padding:11px 17px;font-weight:600;font-size:14px;cursor:pointer}.menu-btn:hover{background:#f5f5f5}
-.menu-panel{position:absolute;right:0;top:calc(100% + 10px);width:250px;background:#fff;border:1px solid #ddd;border-radius:14px;padding:8px;box-shadow:0 20px 50px rgba(0,0,0,.12);opacity:0;visibility:hidden;transform:translateY(-8px);transition:.2s;z-index:200}
-.menu:hover>.menu-panel{opacity:1;visibility:visible;transform:translateY(0)}
-.menu-item{display:flex;width:100%;align-items:center;justify-content:space-between;background:transparent;border:0;border-radius:9px;padding:13px;text-align:left;font-size:14px;font-weight:600;cursor:pointer;color:#111}.menu-item:hover{background:#f0f1f3}.menu-item .arrow{color:#888}
-.submenu{position:relative}.submenu-panel{position:absolute;right:calc(100% + 8px);top:-8px;width:230px;background:#fff;border:1px solid #ddd;border-radius:14px;padding:8px;box-shadow:0 20px 50px rgba(0,0,0,.12);opacity:0;visibility:hidden;transform:translateX(8px);transition:.2s}.submenu:hover>.submenu-panel{opacity:1;visibility:visible;transform:translateX(0)}
-.hero{min-height:calc(100vh - 80px);display:flex;align-items:center;justify-content:center;text-align:center;padding:70px 25px;position:relative;overflow:hidden;background:#fff}.hero-content{max-width:850px;position:relative;z-index:2}.eyebrow{font-size:11px;letter-spacing:3px;font-weight:700;color:#888;margin-bottom:22px}.hero h1{font-size:clamp(52px,8vw,100px);line-height:.95;letter-spacing:-5px;margin-bottom:25px}.hero h1 span{color:#999}.hero p{font-size:19px;line-height:1.7;color:#777;max-width:600px;margin:0 auto}.hero-glow{position:absolute;border-radius:50%;filter:blur(4px);background:#eef0f3}.glow1{width:420px;height:420px;left:-170px;top:10%;opacity:.7}.glow2{width:360px;height:360px;right:-120px;bottom:-50px;opacity:.7}
-.tool-page{display:none;min-height:calc(100vh - 80px);padding:70px 6%;background:#f6f7f9}.tool-page.active{display:block}.back-btn{border:1px solid #ddd;background:#fff;padding:10px 15px;border-radius:9px;cursor:pointer;font-weight:600;margin-bottom:35px}.tool-header{max-width:900px;margin:0 auto 35px}.section-label{font-size:11px;letter-spacing:2.5px;font-weight:700;color:#888;margin-bottom:12px}.tool-header h2{font-size:52px;letter-spacing:-2px;margin-bottom:10px}.tool-header p{color:#777;font-size:17px}
-.converter-card{max-width:900px;margin:auto;background:#fff;border:1px solid #e3e4e6;border-radius:20px;padding:30px;box-shadow:0 15px 50px rgba(0,0,0,.04)}.upload-area{min-height:330px;border:2px dashed #d3d5d8;border-radius:15px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;transition:.2s}.upload-area.dragging{background:#f0f1f3;border-color:#111}.upload-icon{width:62px;height:62px;border-radius:50%;background:#111;color:#fff;display:flex;align-items:center;justify-content:center;font-size:28px;margin-bottom:18px}.upload-area h3{font-size:21px;margin-bottom:7px}.upload-area p{color:#888;margin-bottom:20px}.browse-button,.convert-button,.download-all{background:#111;color:#fff;border:0;border-radius:9px;padding:13px 21px;cursor:pointer;font-weight:600}.upload-note{margin-top:20px;color:#aaa;font-size:11px}
-.file-info{display:none;align-items:center;margin-top:20px;padding:15px;background:#f7f7f8;border-radius:12px}.file-info.visible{display:flex}.file-icon{width:48px;height:48px;background:#111;color:#fff;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;margin-right:14px}.file-details{flex:1}.file-details strong,.file-details span{display:block}.file-details strong{font-size:14px;word-break:break-all}.file-details span{font-size:12px;color:#888}.remove-file{border:0;background:transparent;font-size:25px;cursor:pointer}
-.progress-container{display:none;margin-top:20px}.progress-container.visible{display:block}.progress-header{display:flex;justify-content:space-between;font-size:12px;margin-bottom:8px}.progress-bar{height:7px;background:#e6e7e9;border-radius:10px;overflow:hidden}.progress-fill{height:100%;width:0;background:#111;transition:width .2s}.convert-button{display:none;width:100%;margin-top:20px}.convert-button.visible{display:block}.convert-button:disabled{opacity:.5;cursor:not-allowed}
-.results-section{display:none;max-width:900px;margin:55px auto 0}.results-section.visible{display:block}.results-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:22px}.results-header h3{font-size:30px}.results-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:18px}.result-card{background:#fff;border:1px solid #e3e4e6;border-radius:14px;overflow:hidden}.image-preview{background:#f0f1f3;aspect-ratio:1/1.35;padding:12px;display:flex;align-items:center;justify-content:center}.image-preview img{max-width:100%;max-height:100%;object-fit:contain;box-shadow:0 5px 20px rgba(0,0,0,.08)}.result-info{padding:13px;display:flex;justify-content:space-between;align-items:center}.result-info span{font-size:13px;font-weight:600}.result-info button{border:0;background:#111;color:#fff;padding:7px 11px;border-radius:6px;cursor:pointer;font-size:12px}
-footer{border-top:1px solid var(--border);background:#fff;padding:30px 6%;display:flex;justify-content:space-between;color:#999;font-size:12px}.footer-brand{color:#111;font-weight:700}
-@media(max-width:700px){.navbar{padding:0 20px}.brand-subtitle{display:none}.hero h1{letter-spacing:-3px}.hero p{font-size:16px}.submenu-panel{right:0;top:100%;margin-top:5px}.menu-panel{width:220px}.tool-page{padding:45px 20px}.tool-header h2{font-size:40px}.converter-card{padding:15px}.results-header{gap:15px}.results-header h3{font-size:24px}footer{flex-direction:column;gap:9px;text-align:center}}
+:root{--bg:#f5f7fb;--card:#fff;--ink:#172033;--muted:#667085;--line:#e4e7ec;--brand:#111827;--accent:#2563eb;--soft:#eef4ff;--shadow:0 10px 30px rgba(16,24,40,.08)}
+*{box-sizing:border-box}body{margin:0;font-family:Inter,Arial,sans-serif;background:var(--bg);color:var(--ink)}
+nav{height:72px;background:#fff;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 5%;position:sticky;top:0;z-index:20}
+.brand{font-size:22px;font-weight:800}.brand span{color:var(--accent)}
+.clock{text-align:right}.clock b{display:block;font-size:15px}.clock small{color:var(--muted)}
+.hero{padding:75px 5% 50px;background:linear-gradient(135deg,#fff,#edf3ff)}
+.hero h1{font-size:clamp(34px,6vw,64px);line-height:1.02;margin:0 0 16px;letter-spacing:-2px}.hero p{max-width:700px;color:var(--muted);font-size:18px;line-height:1.6;margin:0}
+.wrap{max-width:1200px;margin:auto;padding:45px 5% 80px}.section-title{display:flex;justify-content:space-between;align-items:end;margin-bottom:22px}.section-title h2{margin:0;font-size:30px}.section-title p{margin:0;color:var(--muted)}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+.cat{background:var(--card);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);overflow:hidden}.head{width:100%;border:0;background:#fff;padding:22px;text-align:left;cursor:pointer;font-size:18px;font-weight:800;display:flex;justify-content:space-between}.head span{color:var(--accent)}.list{display:none;border-top:1px solid var(--line);padding:8px}.cat.open .list{display:block}.tool{width:100%;padding:15px;border:0;background:#fff;border-radius:10px;text-align:left;cursor:pointer;font-size:14px;color:var(--ink)}.tool:hover{background:var(--soft);color:var(--accent)}
+.page{display:none;max-width:1100px;margin:35px auto 80px;padding:0 5%}.page.active{display:block}.back{border:0;background:none;color:var(--accent);font-weight:700;cursor:pointer;padding:0;margin-bottom:18px}
+.panel{background:#fff;border:1px solid var(--line);border-radius:20px;padding:28px;box-shadow:var(--shadow)}.panel h2{margin-top:0;font-size:30px}.desc{color:var(--muted);line-height:1.6}
+.drop{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;border:2px dashed #b9c2d0;border-radius:16px;padding:36px 24px;text-align:center;background:#fafcff;cursor:pointer;user-select:none;transition:.15s}
+.drop:hover{border-color:#8fa3bd;background:#f3f7ff}
+.drop.drag{background:#eef4ff;border-color:var(--accent);transform:scale(1.01)}
+.drop input{display:none}
+.drop:focus-within{outline:3px solid #dbeafe}
+.drop .icon{width:52px;height:52px;border-radius:50%;background:var(--soft);display:flex;align-items:center;justify-content:center;font-size:24px;margin-bottom:2px}
+.drop strong{font-size:16px;font-weight:700;color:var(--ink)}
+.drop span{color:var(--muted);font-size:13px;max-width:340px}
+.drop.has-file{border-style:solid;border-color:#b7d0ff;background:#f6f9ff}
+.drop .filename{font-size:13px;font-weight:700;color:var(--accent);word-break:break-all;max-width:340px}
+.row{display:flex;gap:12px;flex-wrap:wrap;margin-top:18px}.btn{border:0;border-radius:10px;padding:12px 17px;background:var(--brand);color:#fff;font-weight:700;cursor:pointer}.btn.blue{background:var(--accent)}.btn.light{background:#eef2f6;color:#172033}.btn:disabled{opacity:.5;cursor:not-allowed}
+.controls{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:18px}.field{background:#f8fafc;border:1px solid var(--line);border-radius:12px;padding:13px}.field label{display:block;font-size:12px;color:var(--muted);margin-bottom:7px}.field input,.field select{width:100%;padding:10px;border:1px solid var(--line);border-radius:8px;background:#fff}
+.preview{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:15px;margin-top:22px}.thumb{border:1px solid var(--line);border-radius:12px;padding:10px;background:#fff}.thumb img{width:100%;height:150px;object-fit:contain;background:#f2f4f7;border-radius:8px}.thumb small{display:block;color:var(--muted);margin:8px 0}.progress{height:9px;background:#e9edf3;border-radius:10px;overflow:hidden;margin-top:18px}.progress i{display:block;height:100%;width:0;background:var(--accent);transition:.2s}
+.note{padding:13px 15px;background:#f8fafc;border:1px solid var(--line);border-radius:10px;color:var(--muted);font-size:13px;margin-top:15px}
+footer{text-align:center;padding:30px;color:var(--muted);border-top:1px solid var(--line);background:#fff}
+@media(max-width:850px){.grid{grid-template-columns:1fr 1fr}.controls{grid-template-columns:1fr 1fr}}
+@media(max-width:560px){nav{padding:0 4%}.clock{font-size:12px}.grid{grid-template-columns:1fr}.hero{padding-top:55px}.panel{padding:20px}.controls{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
 
-<header class="navbar">
-<div class="brand">
-<div class="brand-mark">G</div>
-<div><div class="brand-name">Gopali & Co</div><div class="brand-subtitle">ESSENTIALS</div></div>
-</div>
-
-<nav class="nav-menu">
-<div class="menu">
-<button class="menu-btn">Essentials ▾</button>
-<div class="menu-panel">
-
-<div class="submenu">
-<button class="menu-item">
-<span>Image Tools</span><span class="arrow">‹</span>
-</button>
-
-<div class="submenu-panel">
-<button class="menu-item" onclick="openTool()">
-<span>📄 PDF to JPEG</span><span class="arrow">→</span>
-</button>
-</div>
-</div>
-
-</div>
-</div>
+<nav>
+  <div class="brand">Gopali <span>&</span> Co</div>
+  <div class="clock"><b id="time">--:--:--</b><small id="date">Loading...</small></div>
 </nav>
-</header>
-
-<main>
 
 <section class="hero" id="home">
-<div class="hero-glow glow1"></div>
-<div class="hero-glow glow2"></div>
-<div class="hero-content">
-<div class="eyebrow">GOPALI & CO</div>
-<h1>Work smarter.<br><span>Get things done faster.</span></h1>
-<p>A professional collection of practical digital tools designed to make everyday work simpler, faster and more efficient.</p>
+  <div class="wrap" style="padding-top:0;padding-bottom:20px">
+    <h1>Essentials</h1>
+    <p>Everyday tools for the Gopali & Co team — fast, private and browser-based. No file uploads are required for the tools below.</p>
+  </div>
+</section>
+
+<section class="wrap" id="tools">
+  <div class="section-title"><div><h2>Work Tools</h2><p>Choose a category to open its tools.</p></div></div>
+  <div class="grid">
+<div class="cat open"><button class="head" onclick="toggle(this)">Image Tools <span>⌄</span></button><div class="list">
+<button class="tool" onclick="openTool('pdfjpeg')">PDF to JPEG →</button>
+<button class="tool" onclick="openTool('jpegpdf')">JPEG / PNG to PDF →</button>
+<button class="tool" onclick="openTool('resize')">Image Resizer →</button>
+<button class="tool" onclick="openTool('compress')">Image Size Compressor →</button>
+<button class="tool" onclick="openTool('socialresize')">Social Media Image Resizer →</button>
+</div></div>
+<div class="cat"><button class="head" onclick="toggle(this)">Video Tools <span>⌄</span></button><div class="list">
+<button class="tool" onclick="openTool('gifmp4')">GIF to MP4 Converter →</button>
+<button class="tool" onclick="openTool('videoinfo')">Video Info / Metadata →</button>
+<button class="tool" onclick="openTool('videotimer')">Video Duration Calculator →</button>
+<button class="tool" onclick="openTool('yttool')">YouTube Video Tools →</button>
+</div></div>
+<div class="cat"><button class="head" onclick="toggle(this)">Social Media <span>⌄</span></button><div class="list">
+<button class="tool" onclick="openTool('charcount')">Caption / Character Counter →</button>
+<button class="tool" onclick="openTool('hashtag')">Hashtag Formatter →</button>
+</div></div>
+<div class="cat"><button class="head" onclick="toggle(this)">Text Tools <span>⌄</span></button><div class="list">
+<button class="tool" onclick="openTool('charcount')">Word & Character Counter →</button>
+<button class="tool" onclick="openTool('slug')">Slug Generator →</button>
+<button class="tool" onclick="openTool('readability')">Reading Time Calculator →</button>
+<button class="tool" onclick="openTool('casetool')">Text Case Converter →</button>
+</div></div>
+<div class="cat"><button class="head" onclick="toggle(this)">Business Tools <span>⌄</span></button><div class="list">
+<button class="tool" onclick="openTool('qr')">QR Code Generator →</button>
+<button class="tool" onclick="openTool('utm')">UTM Link Builder →</button>
+<button class="tool" onclick="openTool('roi')">ROI Calculator →</button>
+<button class="tool" onclick="openTool('pricecalc')">Price & GST Calculator →</button>
+</div></div>
 </div>
 </section>
 
-<section class="tool-page" id="pdfTool">
+<!-- PDF TO JPEG -->
+<section class="page" id="pdfjpeg">
+<button class="back" onclick="home()">← Back to Essentials</button>
+<div class="panel"><h2>PDF to JPEG</h2><p class="desc">Convert every page of a PDF into a high-quality JPEG directly in your browser.</p>
+<label class="drop" id="pdfDrop" for="pdfFile"><input id="pdfFile" type="file" accept=".pdf,application/pdf"><div class="icon">📄</div><strong>Drop a PDF here or click to choose</strong><span>PDF files only · processed on this device</span></label>
+<div class="row"><button class="btn blue" onclick="document.getElementById('pdfFile').click()">Choose PDF</button><button class="btn light" id="pdfAll" disabled>Download All</button></div>
+<div class="progress"><i id="pdfProgress"></i></div><div class="preview" id="pdfPreview"></div></div></section>
 
-<button class="back-btn" onclick="goHome()">← Back to Home</button>
+<!-- IMAGE INPUT TO PDF -->
+<section class="page" id="jpegpdf">
+<button class="back" onclick="home()">← Back to Essentials</button>
+<div class="panel"><h2>JPEG / PNG to PDF</h2><p class="desc">Select multiple images, arrange them in the selected order, and download one PDF.</p>
+<label class="drop" id="imgsDrop" for="imgsFile"><input id="imgsFile" type="file" accept="image/jpeg,image/png,image/webp" multiple><div class="icon">🖼️</div><strong>Drop images here or click to choose</strong><span>JPG, PNG and WebP · multiple files supported</span></label>
+<div class="row"><button class="btn blue" onclick="document.getElementById('imgsFile').click()">Choose Images</button><button class="btn" id="makePdf" disabled>Create PDF</button></div>
+<div class="preview" id="imgPreview"></div></div></section>
 
-<div class="tool-header">
-<div class="section-label">ESSENTIALS / IMAGE TOOLS</div>
-<h2>PDF to JPEG</h2>
-<p>Convert every page of a PDF document into high-quality JPEG images directly in your browser.</p>
+<!-- RESIZER -->
+<section class="page" id="resize">
+<button class="back" onclick="home()">← Back to Essentials</button>
+<div class="panel"><h2>Image Resizer</h2><p class="desc">Resize an image to exact pixel dimensions or use a percentage. The original file is never uploaded.</p>
+<label class="drop" id="resizeDrop" for="resizeFile"><input id="resizeFile" type="file" accept="image/*"><div class="icon">🖼️</div><strong>Choose or drop an image</strong><span>JPG, PNG, WebP and browser-supported image formats</span></label>
+<div class="controls">
+<div class="field"><label>Width (px)</label><input id="rw" type="number" min="1"></div>
+<div class="field"><label>Height (px)</label><input id="rh" type="number" min="1"></div>
+<div class="field"><label>Lock aspect ratio</label><select id="rlock"><option value="yes">Yes</option><option value="no">No</option></select></div>
 </div>
+<div class="row"><button class="btn blue" id="resizeBtn" disabled>Resize & Download</button></div>
+<div class="preview" id="resizePreview"></div></div></section>
 
-<div class="converter-card">
-
-<div class="upload-area" id="dropZone">
-<div class="upload-icon">↑</div>
-<h3>Drop your PDF here</h3>
-<p>or choose a PDF file from your computer</p>
-<button class="browse-button" onclick="document.getElementById('pdfInput').click()">Choose PDF</button>
-<input type="file" id="pdfInput" accept="application/pdf" hidden>
-<div class="upload-note">Your file is processed locally. It is not uploaded to a server.</div>
+<!-- COMPRESSOR -->
+<section class="page" id="compress">
+<button class="back" onclick="home()">← Back to Essentials</button>
+<div class="panel"><h2>Image Size Compressor</h2><p class="desc">Reduce image file size by adjusting quality and output format. Great for email, websites and social media.</p>
+<label class="drop" id="compDrop" for="compFile"><input id="compFile" type="file" accept="image/*"><div class="icon">📦</div><strong>Choose or drop an image</strong><span>Compression happens locally in your browser.</span></label>
+<div class="controls">
+<div class="field"><label>Quality: <b id="qVal">75</b>%</label><input id="quality" type="range" min="10" max="100" value="75"></div>
+<div class="field"><label>Output format</label><select id="compFormat"><option value="image/jpeg">JPEG</option><option value="image/webp">WebP</option><option value="image/png">PNG</option></select></div>
+<div class="field"><label>Max width (optional)</label><input id="maxw" type="number" min="1" placeholder="Keep original"></div>
 </div>
+<div class="row"><button class="btn blue" id="compressBtn" disabled>Compress & Download</button></div>
+<div id="compInfo" class="note">Choose an image to begin.</div></div></section>
 
-<div class="file-info" id="fileInfo">
-<div class="file-icon">PDF</div>
-<div class="file-details">
-<strong id="fileName"></strong>
-<span id="fileSize"></span>
+<!-- SOCIAL RESIZER -->
+<section class="page" id="socialresize">
+<button class="back" onclick="home()"></button>
+<div class="panel"><h2>Social Media Image Resizer</h2><p class="desc">Create correctly sized images for common social media placements.</p>
+<label class="drop" id="socialDrop" for="socialFile"><input id="socialFile" type="file" accept="image/*"><div class="icon">📱</div><strong>Choose or drop an image</strong><span>Then select the required platform size.</span></label>
+<div class="controls">
+<div class="field"><label>Preset</label><select id="socialPreset">
+<option value="1080x1080">Instagram Square — 1080×1080</option>
+<option value="1080x1350">Instagram Portrait — 1080×1350</option>
+<option value="1080x1920">Instagram Story / Reel — 1080×1920</option>
+<option value="1200x627">LinkedIn / Facebook Link — 1200×627</option>
+<option value="1200x1200">LinkedIn Square — 1200×1200</option>
+<option value="1280x720">YouTube Thumbnail — 1280×720</option>
+<option value="1600x900">X / Twitter Landscape — 1600×900</option>
+</select></div>
+<div class="field"><label>Fit mode</label><select id="socialFit"><option value="cover">Crop to fill</option><option value="contain">Fit with background</option></select></div>
+<div class="field"><label>JPEG quality</label><input id="socialQuality" type="range" min="50" max="100" value="90"></div>
 </div>
-<button class="remove-file" onclick="removeFile()">×</button>
+<div class="row"><button class="btn blue" id="socialBtn" disabled>Resize & Download</button></div>
+<div class="preview" id="socialPreview"></div></div></section>
+
+<!-- GIF MP4 -->
+<section class="page" id="gifmp4">
+<button class="back" onclick="home()">← Back to Essentials</button>
+<div class="panel"><h2>GIF to MP4 Converter</h2><p class="desc">Convert an animated GIF into MP4 directly in the browser using FFmpeg WebAssembly.</p>
+<label class="drop" id="gifDrop" for="gifFile"><input id="gifFile" type="file" accept=".gif,image/gif"><div class="icon">🎞️</div><strong>Choose or drop an animated GIF</strong><span>Conversion runs locally in your browser using FFmpeg WebAssembly.</span></label>
+<div class="row"><button class="btn blue" id="gifBtn" disabled>Convert to MP4</button></div>
+<div class="progress"><i id="gifProgress"></i></div><div id="gifStatus" class="note">Choose a GIF to begin.</div></div></section>
+
+<!-- YOUTUBE VIDEO TOOLS -->
+<section class="page" id="yttool">
+<button class="back" onclick="home()">← Back to Essentials</button>
+<div class="panel">
+<h2>YouTube Video Tools</h2>
+<p class="desc">Paste a YouTube URL to validate it, open it, and generate its official embed URL. Direct downloading of arbitrary YouTube videos is not included because YouTube's Terms restrict downloading content except where expressly permitted by the service or rights holder.</p>
+<div class="field" style="margin-top:18px"><label>YouTube URL</label><input id="ytUrl" style="width:100%;padding:13px;border:1px solid var(--line);border-radius:10px;font:inherit" placeholder="https://www.youtube.com/watch?v=..."></div>
+<div class="row"><button class="btn blue" onclick="processYT()">Check Video</button><button class="btn light" onclick="clearYT()">Clear</button></div>
+<div id="ytResult" style="margin-top:20px"></div>
+</div></section>
+
+<!-- VIDEO INFO -->
+<section class="page" id="videoinfo">
+<button class="back" onclick="home()">← Back to Essentials</button>
+<div class="panel"><h2>Video Info / Metadata</h2><p class="desc">Inspect basic browser-readable video properties without uploading the file.</p>
+<label class="drop" id="videoInfoDrop" for="videoInfoFile"><input id="videoInfoFile" type="file" accept="video/*,.mp4,.webm,.mov,.m4v"><div class="icon">🎬</div><strong>Choose or drop a video</strong><span>MP4, WebM, MOV and browser-supported formats</span></label><div id="videoInfoOut" class="note">No video selected.</div></div></section>
+
+<!-- VIDEO DURATION -->
+<section class="page" id="videotimer">
+<button class="back" onclick="home()">← Back to Essentials</button>
+<div class="panel"><h2>Video Duration Calculator</h2><p class="desc">Select a video and get its exact duration, frame size and estimated file size.</p>
+<label class="drop" id="durationDrop" for="durationFile"><input id="durationFile" type="file" accept="video/*,.mp4,.webm,.mov,.m4v"><div class="icon">⏱️</div><strong>Choose or drop a video</strong><span>Information is read locally.</span></label><div id="durationOut" class="note">No video selected.</div></div></section>
+
+<!-- COUNTER -->
+<section class="page" id="charcount">
+<button class="back" onclick="home()">← Back to Essentials</button>
+<div class="panel"><h2>Word & Character Counter</h2><p class="desc">Useful for captions, articles, descriptions and social posts.</p>
+<textarea id="countText" style="width:100%;min-height:260px;padding:15px;border:1px solid var(--line);border-radius:12px;font:inherit;resize:vertical" placeholder="Type or paste your text..."></textarea>
+<div class="note" id="countOut">Words: 0 · Characters: 0 · Characters without spaces: 0 · Lines: 0</div></div></section>
+
+<!-- HASHTAG -->
+<section class="page" id="hashtag">
+<button class="back" onclick="home()">← Back to Essentials</button>
+<div class="panel"><h2>Hashtag Formatter</h2><p class="desc">Turn comma-separated or space-separated words into clean hashtags.</p>
+<textarea id="hashIn" style="width:100%;min-height:180px;padding:15px;border:1px solid var(--line);border-radius:12px;font:inherit" placeholder="textile, bharat tex, gopali co"></textarea>
+<div class="row"><button class="btn blue" onclick="formatHash()">Format</button><button class="btn light" onclick="copyText('hashOut')">Copy</button></div>
+<div class="note" id="hashOut"></div></div></section>
+
+<!-- SLUG -->
+<section class="page" id="slug">
+<button class="back" onclick="home()">← Back to Essentials</button>
+<div class="panel"><h2>Slug Generator</h2><p class="desc">Convert a headline into a clean URL slug.</p>
+<input id="slugIn" style="width:100%;padding:14px;border:1px solid var(--line);border-radius:10px;font:inherit" placeholder="Enter headline">
+<div class="row"><button class="btn blue" onclick="makeSlug()">Generate Slug</button><button class="btn light" onclick="copyText('slugOut')">Copy</button></div>
+<div class="note" id="slugOut"></div></div></section>
+
+<!-- READABILITY -->
+<section class="page" id="readability">
+<button class="back" onclick="home()">← Back to Essentials</button>
+<div class="panel"><h2>Reading Time Calculator</h2><p class="desc">Paste article text to estimate reading time.</p>
+<textarea id="readIn" style="width:100%;min-height:240px;padding:15px;border:1px solid var(--line);border-radius:12px;font:inherit" placeholder="Paste article text..."></textarea>
+<div class="note" id="readOut">Reading time: 0 min</div></div></section>
+
+<!-- QR -->
+<section class="page" id="qr">
+<button class="back" onclick="home()">← Back to Essentials</button>
+<div class="panel"><h2>QR Code Generator</h2><p class="desc">Generate a static QR code for a URL or text. The QR itself does not expire; the destination must remain available.</p>
+<input id="qrIn" style="width:100%;padding:14px;border:1px solid var(--line);border-radius:10px;font:inherit" placeholder="https://example.com">
+<div class="row"><button class="btn blue" onclick="makeQR()">Generate QR</button></div>
+<div id="qrOut" style="margin-top:20px;text-align:center"></div></div></section>
+
+<!-- CASE CONVERTER -->
+<section class="page" id="casetool">
+<button class="back" onclick="home()">← Back to Essentials</button>
+<div class="panel"><h2>Text Case Converter</h2><p class="desc">Convert text to UPPERCASE, lowercase, or Title Case.</p>
+<textarea id="caseIn" style="width:100%;min-height:200px;padding:15px;border:1px solid var(--line);border-radius:12px;font:inherit" placeholder="Type or paste your text..."></textarea>
+<div class="row">
+<button class="btn blue" onclick="convertCase('upper')">UPPERCASE</button>
+<button class="btn blue" onclick="convertCase('lower')">lowercase</button>
+<button class="btn blue" onclick="convertCase('title')">Title Case</button>
+<button class="btn light" onclick="copyText('caseIn')">Copy</button>
+</div></div></section>
+
+<!-- UTM BUILDER -->
+<section class="page" id="utm">
+<button class="back" onclick="home()">← Back to Essentials</button>
+<div class="panel"><h2>UTM Link Builder</h2><p class="desc">Add campaign tracking parameters to a URL for use in ads, emails and social posts.</p>
+<div class="controls" style="grid-template-columns:1fr">
+<div class="field"><label>Destination URL</label><input id="utmUrl" placeholder="https://example.com/page"></div>
 </div>
-
-<div class="progress-container" id="progressContainer">
-<div class="progress-header"><span>Converting PDF...</span><span id="progressText">0%</span></div>
-<div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+<div class="controls">
+<div class="field"><label>Source</label><input id="utmSource" placeholder="newsletter"></div>
+<div class="field"><label>Medium</label><input id="utmMedium" placeholder="email"></div>
+<div class="field"><label>Campaign</label><input id="utmCampaign" placeholder="autumn-sale"></div>
+<div class="field"><label>Content (optional)</label><input id="utmContent" placeholder="banner-1"></div>
 </div>
+<div class="row"><button class="btn blue" onclick="buildUTM()">Build URL</button><button class="btn light" onclick="copyText('utmOut')">Copy</button></div>
+<div class="note" id="utmOut" style="word-break:break-all">Your tagged URL will appear here.</div></div></section>
 
-<button class="convert-button" id="convertButton" onclick="convertPDF()">Convert PDF to JPEG →</button>
+<!-- ROI CALCULATOR -->
+<section class="page" id="roi">
+<button class="back" onclick="home()">← Back to Essentials</button>
+<div class="panel"><h2>ROI Calculator</h2><p class="desc">Work out return on investment for a campaign, project or purchase.</p>
+<div class="controls">
+<div class="field"><label>Amount invested (₹)</label><input id="roiCost" type="number" min="0" placeholder="10000"></div>
+<div class="field"><label>Amount returned (₹)</label><input id="roiReturn" type="number" min="0" placeholder="12500"></div>
 </div>
+<div class="row"><button class="btn blue" onclick="calcROI()">Calculate ROI</button></div>
+<div class="note" id="roiOut">Enter figures above and calculate.</div></div></section>
 
-<div class="results-section" id="resultsSection">
-<div class="results-header">
-<div><div class="section-label">COMPLETED</div><h3>JPEG Files</h3></div>
-<button class="download-all" onclick="downloadAll()">Download All</button>
+<!-- PRICE / GST CALCULATOR -->
+<section class="page" id="pricecalc">
+<button class="back" onclick="home()">← Back to Essentials</button>
+<div class="panel"><h2>Price & GST Calculator</h2><p class="desc">Apply a discount and then GST to a base price.</p>
+<div class="controls">
+<div class="field"><label>Price (₹)</label><input id="price" type="number" min="0" placeholder="1000"></div>
+<div class="field"><label>Discount (%)</label><input id="discount" type="number" min="0" max="100" placeholder="0"></div>
+<div class="field"><label>GST (%)</label><input id="gst" type="number" min="0" placeholder="18"></div>
 </div>
-<div class="results-grid" id="resultsGrid"></div>
-</div>
+<div class="row"><button class="btn blue" onclick="calcPrice()">Calculate</button></div>
+<div class="note" id="priceOut">Enter figures above and calculate.</div></div></section>
 
-</section>
-</main>
+<footer>Gopali & Co · Essentials · Built for internal productivity</footer>
 
-<footer>
-<div class="footer-brand">Gopali & Co</div>
-<div>Essentials • Internal Work Tools</div>
-<div>© 2026 Gopali & Co</div>
-</footer>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script>
+const $=id=>document.getElementById(id);
+function clock(){let n=new Date();$('time').textContent=new Intl.DateTimeFormat('en-IN',{hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:true}).format(n);$('date').textContent=new Intl.DateTimeFormat('en-IN',{weekday:'long',day:'2-digit',month:'long',year:'numeric'}).format(n)} clock();setInterval(clock,1000);
+function toggle(b){b.parentElement.classList.toggle('open')}
+function home(){document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));$('tools').style.display='block';window.scrollTo({top:0,behavior:'smooth'})}
+function openTool(id){document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));$('tools').style.display='none';$('home').style.display='none';$(id).classList.add('active');window.scrollTo({top:0,behavior:'smooth'})}
+document.querySelectorAll('.back').forEach(b=>b.innerHTML='← Back to Essentials');
+function dl(blob,name){const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=name;a.style.display='none';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),5000)}
+function loadImage(file){return new Promise((res,rej)=>{let im=new Image();im.onload=()=>res(im);im.onerror=rej;im.src=URL.createObjectURL(file)})}
+function canvasBlob(canvas,type='image/jpeg',quality=.9){return new Promise(r=>canvas.toBlob(r,type,quality))}
 
-<script type="module">
-import {getDocument,GlobalWorkerOptions} from "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.min.mjs";
-GlobalWorkerOptions.workerSrc="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.worker.min.mjs";
-
-let selectedFile=null;
-let convertedImages=[];
-
-const pdfInput=document.getElementById("pdfInput");
-const dropZone=document.getElementById("dropZone");
-
-window.openTool=function(){
-document.getElementById("home").style.display="none";
-document.getElementById("pdfTool").classList.add("active");
-window.scrollTo({top:0,behavior:"smooth"});
-};
-
-window.goHome=function(){
-document.getElementById("pdfTool").classList.remove("active");
-document.getElementById("home").style.display="flex";
-window.scrollTo({top:0,behavior:"smooth"});
-};
-
-pdfInput.addEventListener("change",function(){
-if(this.files.length)handleFile(this.files[0]);
-});
-
-dropZone.addEventListener("dragover",function(e){
-e.preventDefault();
-dropZone.classList.add("dragging");
-});
-
-dropZone.addEventListener("dragleave",function(){
-dropZone.classList.remove("dragging");
-});
-
-dropZone.addEventListener("drop",function(e){
-e.preventDefault();
-dropZone.classList.remove("dragging");
-const file=e.dataTransfer.files[0];
-if(file)handleFile(file);
-});
-
-function handleFile(file){
-if(file.type!=="application/pdf"){
-alert("Please select a PDF file.");
-return;
+/* Robust upload helpers */
+function setupDrop(dropId,inputId,handler){
+ const d=$(dropId), i=$(inputId);
+ if(!d||!i)return;
+ const wrapped=files=>{if(files&&files.length)d.classList.add('has-file');else d.classList.remove('has-file');handler(files)};
+ d.addEventListener('dragover',e=>{e.preventDefault();e.stopPropagation();d.classList.add('drag')});
+ d.addEventListener('dragleave',e=>{e.preventDefault();d.classList.remove('drag')});
+ d.addEventListener('drop',e=>{
+   e.preventDefault();e.stopPropagation();d.classList.remove('drag');
+   const files=e.dataTransfer.files;
+   if(files&&files.length){try{const dt=new DataTransfer();[...files].forEach(f=>dt.items.add(f));i.files=dt.files}catch(_){ } wrapped(files)}
+ });
+ i.addEventListener('change',()=>wrapped(i.files));
 }
-selectedFile=file;
-document.getElementById("fileName").textContent=file.name;
-document.getElementById("fileSize").textContent=formatBytes(file.size);
-document.getElementById("fileInfo").classList.add("visible");
-document.getElementById("convertButton").classList.add("visible");
-document.getElementById("resultsSection").classList.remove("visible");
+
+/* PDF -> JPEG */
+async function handlePDF(files){
+ const f=files&&files[0]; if(!f)return;
+ if(f.type!=='application/pdf'&&!f.name.toLowerCase().endsWith('.pdf')){alert('Please choose a PDF file.');return}
+ $('pdfPreview').innerHTML='';$('pdfProgress').style.width='0';$('pdfAll').disabled=true;
+ try{
+  const {getDocument,GlobalWorkerOptions}=await import('https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.min.mjs');
+  GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.worker.min.mjs';
+  const pdf=await getDocument({data:await f.arrayBuffer()}).promise,arr=[];
+  for(let i=1;i<=pdf.numPages;i++){
+   const page=await pdf.getPage(i),v=page.getViewport({scale:2}),c=document.createElement('canvas'),ctx=c.getContext('2d');
+   c.width=Math.ceil(v.width);c.height=Math.ceil(v.height);
+   await page.render({canvasContext:ctx,viewport:v}).promise;
+   const blob=await canvasBlob(c,'image/jpeg',.92),url=URL.createObjectURL(blob);
+   arr.push({blob,name:`page-${i}.jpg`});
+   const d=document.createElement('div');d.className='thumb';
+   const im=document.createElement('img');im.src=url;im.alt=`Page ${i}`;
+   const sm=document.createElement('small');sm.textContent=`Page ${i}`;
+   const b=document.createElement('button');b.className='btn light';b.textContent='Download';b.onclick=()=>dl(blob,`page-${i}.jpg`);
+   d.append(im,sm,b);$('pdfPreview').appendChild(d);
+   $('pdfProgress').style.width=(i/pdf.numPages*100)+'%';
+  }
+  $('pdfAll').disabled=false;$('pdfAll').onclick=()=>arr.forEach((x,i)=>setTimeout(()=>dl(x.blob,x.name),i*250));
+ }catch(e){console.error(e);alert('PDF conversion failed. Please try another PDF or refresh the page.')}
 }
+setupDrop('pdfDrop','pdfFile',handlePDF);
 
-window.convertPDF=async function(){
-if(!selectedFile){alert("Please select a PDF first.");return}
-
-convertedImages=[];
-const button=document.getElementById("convertButton");
-const progressContainer=document.getElementById("progressContainer");
-const progressFill=document.getElementById("progressFill");
-const progressText=document.getElementById("progressText");
-
-button.disabled=true;
-button.textContent="Converting...";
-progressContainer.classList.add("visible");
-
-try{
-const buffer=await selectedFile.arrayBuffer();
-const pdf=await getDocument({data:buffer}).promise;
-const total=pdf.numPages;
-
-for(let i=1;i<=total;i++){
-const page=await pdf.getPage(i);
-const viewport=page.getViewport({scale:2});
-const canvas=document.createElement("canvas");
-const context=canvas.getContext("2d");
-canvas.width=viewport.width;
-canvas.height=viewport.height;
-
-await page.render({canvasContext:context,viewport}).promise;
-
-const jpeg=canvas.toDataURL("image/jpeg",.92);
-convertedImages.push({page:i,data:jpeg});
-
-const progress=Math.round((i/total)*100);
-progressFill.style.width=progress+"%";
-progressText.textContent=progress+"%";
+/* Images -> PDF */
+let selectedImages=[];
+async function handleImages(files){
+ selectedImages=[...files].filter(f=>f.type.startsWith('image/')||/\.(jpe?g|png|webp)$/i.test(f.name));
+ $('imgPreview').innerHTML='';
+ for(let f of selectedImages){
+  const u=URL.createObjectURL(f),d=document.createElement('div');d.className='thumb';
+  const im=document.createElement('img');im.src=u;im.alt=f.name;
+  const sm=document.createElement('small');sm.textContent=f.name;
+  d.append(im,sm);$('imgPreview').appendChild(d);
+ }
+ $('makePdf').disabled=!selectedImages.length;
 }
+setupDrop('imgsDrop','imgsFile',handleImages);
+$('makePdf').onclick=async()=>{
+ if(!selectedImages.length)return;
+ try{
+  if(!window.jspdf)throw new Error('jsPDF failed to load');
+  const {jsPDF}=window.jspdf;
+  let doc=null;
+  for(let i=0;i<selectedImages.length;i++){
+   const im=await loadImage(selectedImages[i]),pageW=210,pageH=297,margin=10;
+   if(i===0)doc=new jsPDF({orientation:'p',unit:'mm',format:'a4'});else doc.addPage();
+   const scale=Math.min((pageW-2*margin)/im.width,(pageH-2*margin)/im.height);
+   const w=im.width*scale,h=im.height*scale;
+   doc.addImage(im,'JPEG',(pageW-w)/2,(pageH-h)/2,w,h);
+  }
+  doc.save('gopali-images.pdf');
+ }catch(e){console.error(e);alert('Could not create the PDF. Please try again.')}
+};
 
-displayResults();
-}catch(error){
-console.error(error);
-alert("Unable to convert this PDF.");
+/* Image Resizer */
+let resizeImg=null;
+async function handleResize(files){
+ const f=files&&files[0];if(!f)return;
+ try{
+  resizeImg=await loadImage(f);$('rw').value=resizeImg.naturalWidth||resizeImg.width;$('rh').value=resizeImg.naturalHeight||resizeImg.height;
+  $('resizePreview').innerHTML=`<div class="thumb"><img src="${resizeImg.src}"><small>${resizeImg.width} × ${resizeImg.height}px</small></div>`;
+  $('resizeBtn').disabled=false;
+ }catch(e){alert('This image format could not be read by your browser.')}
 }
-
-button.disabled=false;
-button.textContent="Convert PDF to JPEG →";
+setupDrop('resizeDrop','resizeFile',handleResize);
+$('rw').oninput=()=>{if(resizeImg&&$('rlock').value==='yes'&&+$('rw').value>0)$('rh').value=Math.round(resizeImg.height*(+$('rw').value/resizeImg.width))};
+$('rh').oninput=()=>{if(resizeImg&&$('rlock').value==='yes'&&+$('rh').value>0)$('rw').value=Math.round(resizeImg.width*(+$('rh').value/resizeImg.height))};
+$('resizeBtn').onclick=async()=>{
+ if(!resizeImg)return;let w=+$('rw').value,h=+$('rh').value;if(!w||!h)return;
+ const c=document.createElement('canvas');c.width=w;c.height=h;c.getContext('2d').drawImage(resizeImg,0,0,w,h);
+ dl(await canvasBlob(c,'image/jpeg',.92),'resized-image.jpg');
 };
 
-function displayResults(){
-const results=document.getElementById("resultsGrid");
-results.innerHTML="";
-
-convertedImages.forEach(function(image){
-const card=document.createElement("div");
-card.className="result-card";
-
-const preview=document.createElement("div");
-preview.className="image-preview";
-
-const img=document.createElement("img");
-img.src=image.data;
-img.alt="Page "+image.page;
-preview.appendChild(img);
-
-const info=document.createElement("div");
-info.className="result-info";
-
-const label=document.createElement("span");
-label.textContent="Page "+image.page;
-
-const download=document.createElement("button");
-download.textContent="Download";
-download.onclick=function(){
-downloadImage(image.data,"page-"+image.page+".jpg");
+/* Image Compressor */
+let compSelected=null;
+function handleComp(files){compSelected=files&&files[0];$('compressBtn').disabled=!compSelected;if(compSelected)$('compInfo').textContent=`Original: ${(compSelected.size/1024).toFixed(1)} KB · ${compSelected.type||'image'}`;}
+setupDrop('compDrop','compFile',handleComp);
+$('quality').oninput=()=>$('qVal').textContent=$('quality').value;
+$('compressBtn').onclick=async()=>{
+ if(!compSelected)return;
+ try{
+  const im=await loadImage(compSelected);let max=+$('maxw').value||im.width,w=im.width,h=im.height;
+  if(w>max){h=Math.round(h*max/w);w=max}
+  const c=document.createElement('canvas');c.width=w;c.height=h;
+  const ctx=c.getContext('2d');
+  if($('compFormat').value==='image/jpeg'){ctx.fillStyle='#fff';ctx.fillRect(0,0,w,h)}
+  ctx.drawImage(im,0,0,w,h);
+  const type=$('compFormat').value,q=+$('quality').value/100,blob=await canvasBlob(c,type,q);
+  const ext=type==='image/png'?'png':type==='image/webp'?'webp':'jpg';
+  $('compInfo').textContent=`Original: ${(compSelected.size/1024).toFixed(1)} KB → Compressed: ${(blob.size/1024).toFixed(1)} KB · ${w}×${h}px`;
+  dl(blob,`compressed-image.${ext}`);
+ }catch(e){alert('Compression failed. Please try a JPG, PNG or WebP image.')}
 };
 
-info.appendChild(label);
-info.appendChild(download);
-card.appendChild(preview);
-card.appendChild(info);
-results.appendChild(card);
-});
-
-document.getElementById("resultsSection").classList.add("visible");
-document.getElementById("resultsSection").scrollIntoView({behavior:"smooth"});
+/* Social Media Resizer */
+let socialImg=null;
+async function handleSocial(files){
+ const f=files&&files[0];if(!f)return;
+ try{socialImg=await loadImage(f);$('socialPreview').innerHTML=`<div class="thumb"><img src="${socialImg.src}"><small>Original: ${socialImg.width}×${socialImg.height}px</small></div>`;$('socialBtn').disabled=false}catch(e){alert('Could not read this image.')}
 }
-
-window.downloadImage=function(data,filename){
-const link=document.createElement("a");
-link.href=data;
-link.download=filename;
-document.body.appendChild(link);
-link.click();
-link.remove();
+setupDrop('socialDrop','socialFile',handleSocial);
+$('socialBtn').onclick=async()=>{
+ if(!socialImg)return;
+ const [W,H]=$('socialPreset').value.split('x').map(Number),c=document.createElement('canvas');c.width=W;c.height=H;
+ const x=c.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,W,H);
+ let scale=$('socialFit').value==='contain'?Math.min(W/socialImg.width,H/socialImg.height):Math.max(W/socialImg.width,H/socialImg.height);
+ let w=socialImg.width*scale,h=socialImg.height*scale;x.drawImage(socialImg,(W-w)/2,(H-h)/2,w,h);
+ dl(await canvasBlob(c,'image/jpeg',+$('socialQuality').value/100),'social-media-image.jpg');
 };
 
-window.downloadAll=function(){
-convertedImages.forEach(function(image,index){
-setTimeout(function(){
-downloadImage(image.data,"page-"+image.page+".jpg");
-},index*250);
-});
+/* GIF -> MP4 */
+let gifSelected=null;
+function handleGIF(files){gifSelected=files&&files[0];$('gifBtn').disabled=!gifSelected;if(gifSelected)$('gifStatus').textContent=`Selected: ${gifSelected.name} · ${(gifSelected.size/1024/1024).toFixed(2)} MB`;}
+setupDrop('gifDrop','gifFile',handleGIF);
+$('gifBtn').onclick=async()=>{
+ if(!gifSelected)return;
+ $('gifBtn').disabled=true;$('gifStatus').textContent='Loading FFmpeg…';$('gifProgress').style.width='10%';
+ try{
+  const {FFmpeg}=await import('https://cdn.jsdelivr.net/npm/@ffmpeg/ffmpeg@0.12.10/dist/esm/index.js');
+  const {fetchFile,toBlobURL}=await import('https://cdn.jsdelivr.net/npm/@ffmpeg/util@0.12.1/dist/esm/index.js');
+  const ff=new FFmpeg();
+  const coreBase='https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.6/dist/esm';
+  await ff.load({
+   coreURL:await toBlobURL(`${coreBase}/ffmpeg-core.js`,'text/javascript'),
+   wasmURL:await toBlobURL(`${coreBase}/ffmpeg-core.wasm`,'application/wasm')
+  });
+  $('gifProgress').style.width='40%';$('gifStatus').textContent='Reading GIF…';
+  await ff.writeFile('input.gif',await fetchFile(gifSelected));
+  await ff.exec(['-i','input.gif','-movflags','faststart','-pix_fmt','yuv420p','-vf','scale=trunc(iw/2)*2:trunc(ih/2)*2','output.mp4']);
+  $('gifProgress').style.width='85%';$('gifStatus').textContent='Preparing MP4…';
+  const data=await ff.readFile('output.mp4'),blob=new Blob([data.buffer],{type:'video/mp4'});
+  dl(blob,'converted-gif.mp4');$('gifProgress').style.width='100%';$('gifStatus').textContent='Done — MP4 downloaded.';ff.terminate();
+ }catch(e){console.error(e);$('gifStatus').textContent='Conversion failed. Try a smaller animated GIF in Chrome or Edge.'}
+ $('gifBtn').disabled=false;
 };
+function getYouTubeId(v){try{const u=new URL(v.trim());if(u.hostname==='youtu.be')return u.pathname.slice(1).split('/')[0];if(['youtube.com','www.youtube.com','m.youtube.com'].includes(u.hostname)){if(u.pathname==='/watch')return u.searchParams.get('v');if(u.pathname.startsWith('/shorts/'))return u.pathname.split('/')[2];if(u.pathname.startsWith('/embed/'))return u.pathname.split('/')[2]}}catch(e){}return null}
+function processYT(){const id=getYouTubeId($('ytUrl').value);if(!id){$('ytResult').innerHTML='<div class="note">Please enter a valid YouTube video URL.</div>';return}const watch='https://www.youtube.com/watch?v='+encodeURIComponent(id),embed='https://www.youtube.com/embed/'+encodeURIComponent(id);$('ytResult').innerHTML='<div class="note"><b>Video ID:</b> '+id+'</div><div class="row"><button class="btn blue" onclick="window.open(\''+watch+'\',\'_blank\')">Open on YouTube</button><button class="btn light" onclick="navigator.clipboard.writeText(\''+embed+'\')">Copy Embed URL</button></div><div style="margin-top:20px;aspect-ratio:16/9;background:#000;border-radius:14px;overflow:hidden"><iframe src="'+embed+'" style="width:100%;height:100%;border:0" allowfullscreen loading="lazy"></iframe></div>'}
+function clearYT(){$('ytUrl').value='';$('ytResult').innerHTML=''}
 
-window.removeFile=function(){
-selectedFile=null;
-convertedImages=[];
-pdfInput.value="";
-document.getElementById("fileInfo").classList.remove("visible");
-document.getElementById("convertButton").classList.remove("visible");
-document.getElementById("progressContainer").classList.remove("visible");
-document.getElementById("resultsSection").classList.remove("visible");
-document.getElementById("progressFill").style.width="0%";
-document.getElementById("progressText").textContent="0%";
-};
+/* Video tools */
+function videoMeta(input,out,dropId){
+ const handler=files=>{
+  const f=files&&files[0];if(!f)return;
+  const u=URL.createObjectURL(f),v=document.createElement('video');v.preload='metadata';
+  v.onloadedmetadata=()=>{out.innerHTML=`<b>${f.name}</b><br>Type: ${f.type||'Unknown'}<br>Size: ${(f.size/1024/1024).toFixed(2)} MB<br>Resolution: ${v.videoWidth} × ${v.videoHeight}px<br>Duration: ${v.duration.toFixed(2)} seconds`;URL.revokeObjectURL(u)};
+  v.onerror=()=>{out.textContent='The browser could not read this video format.';URL.revokeObjectURL(u)};v.src=u;
+ };
+ setupDrop(dropId,input.id,handler);
+}
+videoMeta($('videoInfoFile'),$('videoInfoOut'),'videoInfoDrop');
+videoMeta($('durationFile'),$('durationOut'),'durationDrop');
 
-function formatBytes(bytes){
-if(bytes===0)return"0 Bytes";
-const sizes=["Bytes","KB","MB","GB"];
-const i=Math.floor(Math.log(bytes)/Math.log(1024));
-return(Math.round(bytes/Math.pow(1024,i)*100)/100)+" "+sizes[i];
+/* Text tools */
+$('countText').oninput=()=>{let t=$('countText').value,words=t.trim()?t.trim().split(/\s+/).length:0,lines=t?t.split(/\n/).length:0;$('countOut').textContent=`Words: ${words} · Characters: ${t.length} · Characters without spaces: ${t.replace(/\s/g,'').length} · Lines: ${lines}`};
+function buildUTM(){let u=$('utmUrl').value.trim();if(!u)return;if(!/^https?:\/\//i.test(u))u='https://'+u;try{let x=new URL(u);[['utm_source',$('utmSource').value],['utm_medium',$('utmMedium').value],['utm_campaign',$('utmCampaign').value],['utm_content',$('utmContent').value]].forEach(([k,v])=>v&&x.searchParams.set(k,v));$('utmOut').textContent=x.toString()}catch(e){$('utmOut').textContent='Please enter a valid URL.'}}
+function formatHash(){let a=$('hashIn').value.split(/[,\s]+/).filter(Boolean).map(x=>'#'+x.replace(/^#+/,'').replace(/[^\w]/g,''));$('hashOut').textContent=[...new Set(a)].join(' ')}
+function makeSlug(){$('slugOut').textContent=$('slugIn').value.toLowerCase().trim().normalize('NFKD').replace(/[^\w\s-]/g,'').replace(/[\s_]+/g,'-').replace(/-+/g,'-').replace(/^-|-$/g,'')}
+function convertCase(t){let x=$('caseIn'),s=x.value;if(t==='upper')x.value=s.toUpperCase();else if(t==='lower')x.value=s.toLowerCase();else x.value=s.toLowerCase().replace(/\b\w/g,c=>c.toUpperCase())}
+$('readIn').oninput=()=>{let n=$('readIn').value.trim().split(/\s+/).filter(Boolean).length; $('readOut').textContent=`Words: ${n} · Estimated reading time: ${Math.max(0.1,n/200).toFixed(1)} min`}
+function copyText(id){navigator.clipboard.writeText($(id).textContent||$(id).value||'')}
+function calcROI(){let r=+$('roiReturn').value,c=+$('roiCost').value;$('roiOut').textContent=c?`ROI: ${((r-c)/c*100).toFixed(2)}% · Gain/Loss: ${(r-c).toFixed(2)}`:'Enter an investment.'}
+function calcPrice(){let p=+$('price').value,d=+$('discount').value||0,g=+$('gst').value||0,after=p*(1-d/100),final=after*(1+g/100);$('priceOut').textContent=`After discount: ₹${after.toFixed(2)} · After GST: ₹${final.toFixed(2)}`}
+function makeQR(){
+ const v=$('qrIn').value.trim();if(!v)return;
+ $('qrOut').innerHTML='';
+ if(typeof QRCode==='undefined'){$('qrOut').innerHTML='<div class="note">QR library failed to load. Check your connection and try again.</div>';return}
+ const holder=document.createElement('div');holder.style.display='inline-block';
+ $('qrOut').appendChild(holder);
+ new QRCode(holder,{text:v,width:260,height:260,correctLevel:QRCode.CorrectLevel.M});
+ const row=document.createElement('div');row.className='row';row.style.justifyContent='center';
+ const dlBtn=document.createElement('button');dlBtn.className='btn light';dlBtn.textContent='Download PNG';
+ dlBtn.onclick=()=>{const c=holder.querySelector('canvas');if(c)c.toBlob(b=>dl(b,'qr-code.png'));};
+ row.appendChild(dlBtn);$('qrOut').appendChild(row);
+ const note=document.createElement('div');note.className='note';note.textContent='Generated locally in your browser — nothing is sent to a server.';
+ $('qrOut').appendChild(note);
 }
 </script>
-
 </body>
 </html>
