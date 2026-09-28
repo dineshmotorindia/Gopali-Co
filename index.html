@@ -135,8 +135,8 @@ footer{text-align:center;padding:30px;color:var(--muted);border-top:1px solid va
 <!-- GIF MP4 -->
 <section class="page" id="gifmp4">
 <button class="back" onclick="home()">← Back to Essentials</button>
-<div class="panel"><h2>GIF to MP4 Converter</h2><p class="desc">Convert an animated GIF into MP4 directly in Chrome or Edge. No FFmpeg, no upload, and no server processing.</p>
-<label class="drop" id="gifDrop" for="gifFile"><input id="gifFile" type="file" accept=".gif,image/gif"><strong>🎞️ Choose or drop an animated GIF</strong><span>Runs locally with your browser's native GIF decoder and video encoder.</span></label>
+<div class="panel"><h2>GIF to MP4 Converter</h2><p class="desc">Convert an animated GIF into MP4 directly in your browser. No FFmpeg, no upload, and no server processing.</p>
+<label class="drop" id="gifDrop" for="gifFile"><input id="gifFile" type="file" accept=".gif,image/gif"><strong>🎞️ Choose or drop an animated GIF</strong><span>Runs locally using a dedicated GIF frame decoder and browser H.264/MP4 encoding.</span></label>
 <div class="row"><button class="btn blue" id="gifBtn" disabled>Convert to MP4</button></div>
 <div class="progress"><i id="gifProgress"></i></div><div id="gifStatus" class="note">Choose a GIF to begin.</div></div></section>
 
@@ -341,7 +341,7 @@ $('socialBtn').onclick=async()=>{
  dl(await canvasBlob(c,'image/jpeg',+$('socialQuality').value/100),'social-media-image.jpg');
 };
 
-/* GIF -> MP4 — browser-native ImageDecoder + Mediabunny */
+/* GIF -> MP4 — gifuct-js frame decoder + Mediabunny H.264/MP4 */
 let gifSelected=null;
 function handleGIF(files){
   gifSelected=files&&files[0];
@@ -352,71 +352,113 @@ setupDrop('gifDrop','gifFile',handleGIF);
 const gifInput=$('gifFile');
 gifInput.addEventListener('change',()=>handleGIF(gifInput.files));
 
+function gifFrameToImageData(frame){
+  return new ImageData(new Uint8ClampedArray(frame.patch), frame.dims.width, frame.dims.height);
+}
+
 $('gifBtn').onclick=async()=>{
   if(!gifSelected)return;
   const btn=$('gifBtn'), status=$('gifStatus'), bar=$('gifProgress');
-  btn.disabled=true; bar.style.width='3%';
+  btn.disabled=true; bar.style.width='2%';
   try{
-    if(!('ImageDecoder' in window)) throw new Error('Your browser does not support ImageDecoder. Use the latest Google Chrome or Microsoft Edge.');
     if(typeof Mediabunny==='undefined') throw new Error('The MP4 engine could not load. Refresh the page and try again.');
+    status.textContent='Loading GIF decoder…';
 
-    status.textContent='Checking GIF support…';
-    const supported=await ImageDecoder.isTypeSupported('image/gif');
-    if(!supported) throw new Error('This browser cannot decode animated GIFs with its native decoder. Use the latest Chrome or Edge.');
+    // gifuct-js is a small, client-side GIF parser/decoder. No upload and no FFmpeg.
+    const {parseGIF,decompressFrames}=await import('https://cdn.jsdelivr.net/npm/gifuct-js@2.1.2/+esm');
+    bar.style.width='5%';
 
-    status.textContent='Reading GIF frames…'; bar.style.width='8%';
-    const decoder=new ImageDecoder({data:gifSelected.stream(),type:'image/gif',preferAnimation:true});
-    await decoder.tracks.ready;
-    const track=decoder.tracks.selectedTrack;
-    const frameCount=track.frameCount;
-    const width=track.codedWidth || track.displayWidth;
-    const height=track.codedHeight || track.displayHeight;
-    if(!frameCount || !width || !height) throw new Error('No animated frames were found in this GIF.');
-    if(frameCount>600) throw new Error('This GIF has more than 600 frames. Please use a shorter GIF.');
+    status.textContent='Reading GIF frames…';
+    const buffer=await gifSelected.arrayBuffer();
+    const parsed=parseGIF(buffer);
+    const frames=decompressFrames(parsed,true);
+    if(!frames || !frames.length) throw new Error('No frames could be decoded from this GIF.');
+    if(frames.length>600) throw new Error('This GIF has more than 600 frames. Please use a shorter GIF.');
 
+    const width=parsed?.lsd?.width||frames[0]?.dims?.width;
+    const height=parsed?.lsd?.height||frames[0]?.dims?.height;
+    if(!width || !height) throw new Error('Could not determine the GIF dimensions.');
+    if(width<2 || height<2) throw new Error('GIF dimensions are too small for MP4 encoding.');
+
+    // H.264 generally requires even dimensions. Preserve the image by scaling down
+    // by at most one pixel where necessary.
+    const outW=width%2?width-1:width;
+    const outH=height%2?height-1:height;
     const canvas=document.createElement('canvas');
-    // H.264/MP4 commonly requires even dimensions.
-    canvas.width=width%2?width-1:width;
-    canvas.height=height%2?height-1:height;
-    if(canvas.width<2 || canvas.height<2) throw new Error('GIF dimensions are too small for MP4 encoding.');
-    const ctx=canvas.getContext('2d',{alpha:false,willReadFrequently:false});
-    ctx.fillStyle='#000'; ctx.fillRect(0,0,canvas.width,canvas.height);
+    canvas.width=outW; canvas.height=outH;
+    const ctx=canvas.getContext('2d',{alpha:true});
+    if(!ctx) throw new Error('Could not create a canvas for GIF rendering.');
 
-    const {Output,Mp4OutputFormat,BufferTarget,CanvasSource,Quality}=Mediabunny;
-    const output=new Output({format:new Mp4OutputFormat(),target:new BufferTarget()});
-    const source=new CanvasSource(canvas,{codec:'avc',quality:new Quality({bitrate:Math.min(8_000_000,Math.max(1_000_000,canvas.width*canvas.height*3))})});
+    // Render GIF disposal semantics onto a full-size RGBA canvas.
+    // gifuct-js supplies frame patches and disposalType explicitly.
+    const work=document.createElement('canvas');
+    work.width=width; work.height=height;
+    const wctx=work.getContext('2d',{alpha:true});
+    if(!wctx) throw new Error('Could not create the GIF compositing canvas.');
+    wctx.clearRect(0,0,width,height);
+
+    const {Output,Mp4OutputFormat,BufferTarget,VideoSampleSource,VideoSample,Quality}=Mediabunny;
+    const output=new Output({format:new Mp4OutputFormat({fastStart:'in-memory'}),target:new BufferTarget()});
+    const source=new VideoSampleSource({
+      codec:'avc',
+      quality:new Quality({bitrate:Math.min(10_000_000,Math.max(1_000_000,outW*outH*4))}),
+      keyFrameInterval:2
+    });
     output.addVideoTrack(source);
     await output.start();
 
     let timestamp=0;
-    for(let i=0;i<frameCount;i++){
-      status.textContent=`Encoding frame ${i+1} of ${frameCount}…`;
-      const result=await decoder.decode({frameIndex:i,completeFramesOnly:true});
-      const frame=result.image;
-      const duration=Math.max(0.02,Math.min(10,(frame.duration||100000)/1_000_000));
-      ctx.fillStyle='#000';
-      ctx.fillRect(0,0,canvas.width,canvas.height);
-      ctx.drawImage(frame,0,0,canvas.width,canvas.height);
-      frame.close();
-      await source.add(timestamp,duration);
-      timestamp+=duration;
-      bar.style.width=`${10+Math.round(((i+1)/frameCount)*80)}%`;
+    let previousFrame=null;
+
+    for(let i=0;i<frames.length;i++){
+      const f=frames[i];
+      const d=Math.max(0.02,Math.min(10,(Number(f.delay)||50)/1000));
+      status.textContent=`Rendering frame ${i+1} of ${frames.length}…`;
+
+      // Disposal 2 from the previous frame clears that previous frame's rectangle.
+      if(previousFrame && previousFrame.disposalType===2){
+        const pd=previousFrame.dims;
+        wctx.clearRect(pd.left,pd.top,pd.width,pd.height);
+      } else if(previousFrame && previousFrame.disposalType===3 && previousFrame.restoreSnapshot){
+        wctx.putImageData(previousFrame.restoreSnapshot,0,0);
+      }
+
+      const restoreBeforeFrame=f.disposalType===3 ? wctx.getImageData(0,0,width,height) : null;
+      const patch=gifFrameToImageData(f);
+      wctx.putImageData(patch,f.dims.left,f.dims.top);
+
+      ctx.clearRect(0,0,outW,outH);
+      ctx.drawImage(work,0,0,outW,outH);
+
+      const sample=new VideoSample(canvas,{timestamp,duration:d});
+      await source.add(sample,{keyFrame:i===0});
+      sample.close();
+      timestamp+=d;
+
+      // Disposal method 3 means restore the canvas to its state BEFORE this frame.
+      // Keep that snapshot for the next iteration.
+      if(f.disposalType===3) f.restoreSnapshot=restoreBeforeFrame;
+      previousFrame=f;
+      bar.style.width=`${8+Math.round(((i+1)/frames.length)*84)}%`;
     }
 
-    status.textContent='Finalizing MP4…'; bar.style.width='94%';
+    status.textContent='Finalizing MP4…'; bar.style.width='95%';
     await output.finalize();
-    const buffer=output.target.buffer;
-    if(!buffer || buffer.byteLength<1000) throw new Error('The MP4 output was empty.');
-    const blob=new Blob([buffer],{type:'video/mp4'});
+    const bufferOut=output.target.buffer;
+    if(!bufferOut || bufferOut.byteLength<1000) throw new Error('The MP4 output was empty.');
+
+    const blob=new Blob([bufferOut],{type:'video/mp4'});
     const base=gifSelected.name.replace(/\.gif$/i,'')||'converted-gif';
     dl(blob,`${base}.mp4`);
-    decoder.close();
     bar.style.width='100%';
-    status.textContent=`Done — ${frameCount} frame${frameCount===1?'':'s'} converted to MP4 and downloaded.`;
+    status.textContent=`Done — ${frames.length} frame${frames.length===1?'':'s'} converted to MP4 and downloaded.`;
   }catch(e){
     console.error('GIF → MP4 error:',e);
     bar.style.width='0%';
-    status.textContent=e?.message||'Conversion failed. Use the latest Chrome or Edge and try again.';
+    const msg=e?.message||String(e)||'Conversion failed.';
+    status.textContent=msg.includes('codec')||msg.includes('Encoding')
+      ? 'H.264/MP4 encoding is not available in this browser. Please use the latest Chrome or Edge.'
+      : msg;
   }finally{
     btn.disabled=false;
   }
