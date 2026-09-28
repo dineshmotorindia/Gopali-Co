@@ -26,6 +26,7 @@ footer{text-align:center;padding:30px;color:var(--muted);border-top:1px solid va
 @media(max-width:850px){.grid{grid-template-columns:1fr 1fr}.controls{grid-template-columns:1fr 1fr}}
 @media(max-width:560px){nav{padding:0 4%}.clock{font-size:12px}.grid{grid-template-columns:1fr}.hero{padding-top:55px}.panel{padding:20px}.controls{grid-template-columns:1fr}}
 </style>
+<script src="https://unpkg.com/mediabunny@1.60.0/dist/bundles/mediabunny.cjs"></script>
 </head>
 <body>
 
@@ -134,9 +135,8 @@ footer{text-align:center;padding:30px;color:var(--muted);border-top:1px solid va
 <!-- GIF MP4 -->
 <section class="page" id="gifmp4">
 <button class="back" onclick="home()">← Back to Essentials</button>
-<div class="panel"><h2>GIF to MP4 Converter</h2><p class="desc">Convert an animated GIF into MP4 directly in the browser using FFmpeg WebAssembly.</p>
-<div class="note"><b>One-time GitHub setup:</b> this converter expects an <code>ffmpeg</code> folder beside <code>index.html</code> containing <code>ffmpeg-core.js</code>, <code>ffmpeg-core.wasm</code> and <code>ffmpeg-core.worker.js</code>. This makes the converter independent of external CDN loading.</div>
-<label class="drop" id="gifDrop" for="gifFile"><input id="gifFile" type="file" accept=".gif,image/gif"><strong>🎞️ Choose or drop an animated GIF</strong><span>Conversion runs locally in your browser using FFmpeg WebAssembly.</span></label>
+<div class="panel"><h2>GIF to MP4 Converter</h2><p class="desc">Convert an animated GIF into MP4 directly in Chrome or Edge. No FFmpeg, no upload, and no server processing.</p>
+<label class="drop" id="gifDrop" for="gifFile"><input id="gifFile" type="file" accept=".gif,image/gif"><strong>🎞️ Choose or drop an animated GIF</strong><span>Runs locally with your browser's native GIF decoder and video encoder.</span></label>
 <div class="row"><button class="btn blue" id="gifBtn" disabled>Convert to MP4</button></div>
 <div class="progress"><i id="gifProgress"></i></div><div id="gifStatus" class="note">Choose a GIF to begin.</div></div></section>
 
@@ -145,7 +145,7 @@ footer{text-align:center;padding:30px;color:var(--muted);border-top:1px solid va
 <button class="back" onclick="home()">← Back to Essentials</button>
 <div class="panel">
 <h2>YouTube Video Tools</h2>
-<p class="desc">Paste a YouTube URL to validate it, open it, and generate its official embed URL. Direct downloading of arbitrary YouTube videos is not included because YouTube's Terms restrict downloading content except where expressly permitted by the service or rights holder. citeturn0search0</p>
+<p class="desc">Paste a YouTube URL to validate it, open it, and generate its official embed URL. Direct downloading of arbitrary YouTube videos is not included because YouTube's Terms restrict downloading content except where expressly permitted by the service or rights holder.</p>
 <div class="field" style="margin-top:18px"><label>YouTube URL</label><input id="ytUrl" style="width:100%;padding:13px;border:1px solid var(--line);border-radius:10px;font:inherit" placeholder="https://www.youtube.com/watch?v=..."></div>
 <div class="row"><button class="btn blue" onclick="processYT()">Check Video</button><button class="btn light" onclick="clearYT()">Clear</button></div>
 <div id="ytResult" style="margin-top:20px"></div>
@@ -341,129 +341,87 @@ $('socialBtn').onclick=async()=>{
  dl(await canvasBlob(c,'image/jpeg',+$('socialQuality').value/100),'social-media-image.jpg');
 };
 
-/* GIF -> MP4 — local FFmpeg core for GitHub Pages */
+/* GIF -> MP4 — browser-native ImageDecoder + Mediabunny */
 let gifSelected=null;
-
-function setupGifDrop(){
- const d=$('gifDrop'),i=$('gifFile');
- const handle=files=>{
+function handleGIF(files){
   gifSelected=files&&files[0];
   $('gifBtn').disabled=!gifSelected;
-  if(!gifSelected)return;
-  const ok=gifSelected.type==='image/gif'||gifSelected.name.toLowerCase().endsWith('.gif');
-  if(!ok){$('gifBtn').disabled=true;$('gifStatus').textContent='Please select a GIF file.';return}
-  $('gifStatus').textContent=`Selected: ${gifSelected.name} · ${(gifSelected.size/1024/1024).toFixed(2)} MB`;
- };
- i.addEventListener('change',()=>handle(i.files));
- d.addEventListener('dragover',e=>{e.preventDefault();d.classList.add('drag')});
- d.addEventListener('dragleave',()=>d.classList.remove('drag'));
- d.addEventListener('drop',e=>{e.preventDefault();d.classList.remove('drag');handle(e.dataTransfer.files)});
+  if(gifSelected) $('gifStatus').textContent=`Selected: ${gifSelected.name} · ${(gifSelected.size/1024/1024).toFixed(2)} MB`;
 }
-setupGifDrop();
-
-let localFFmpeg=null;
-
-async function loadLocalFFmpeg(){
- if(localFFmpeg)return localFFmpeg;
-
- const {FFmpeg}=await import('https://cdn.jsdelivr.net/npm/@ffmpeg/ffmpeg@0.12.10/dist/esm/index.js');
- const {fetchFile}=await import('https://cdn.jsdelivr.net/npm/@ffmpeg/util@0.12.1/dist/esm/index.js');
-
- const ff=new FFmpeg();
-
- /*
-   IMPORTANT:
-   Put these three files in the GitHub repository:
-     /ffmpeg/ffmpeg-core.js
-     /ffmpeg/ffmpeg-core.wasm
-     /ffmpeg/ffmpeg-core.worker.js
-
-   This avoids runtime CDN/CORS problems on GitHub Pages.
- */
- await ff.load({
-   coreURL:new URL('./ffmpeg/ffmpeg-core.js',location.href).href,
-   wasmURL:new URL('./ffmpeg/ffmpeg-core.wasm',location.href).href,
-   workerURL:new URL('./ffmpeg/ffmpeg-core.worker.js',location.href).href
- });
-
- localFFmpeg={ff,fetchFile};
- return localFFmpeg;
-}
+setupDrop('gifDrop','gifFile',handleGIF);
+const gifInput=$('gifFile');
+gifInput.addEventListener('change',()=>handleGIF(gifInput.files));
 
 $('gifBtn').onclick=async()=>{
- if(!gifSelected)return;
+  if(!gifSelected)return;
+  const btn=$('gifBtn'), status=$('gifStatus'), bar=$('gifProgress');
+  btn.disabled=true; bar.style.width='3%';
+  try{
+    if(!('ImageDecoder' in window)) throw new Error('Your browser does not support ImageDecoder. Use the latest Google Chrome or Microsoft Edge.');
+    if(typeof Mediabunny==='undefined') throw new Error('The MP4 engine could not load. Refresh the page and try again.');
 
- const btn=$('gifBtn'),status=$('gifStatus'),bar=$('gifProgress');
- btn.disabled=true;bar.style.width='5%';
- status.textContent='Loading local FFmpeg engine…';
+    status.textContent='Checking GIF support…';
+    const supported=await ImageDecoder.isTypeSupported('image/gif');
+    if(!supported) throw new Error('This browser cannot decode animated GIFs with its native decoder. Use the latest Chrome or Edge.');
 
- let engine=null;
+    status.textContent='Reading GIF frames…'; bar.style.width='8%';
+    const decoder=new ImageDecoder({data:gifSelected.stream(),type:'image/gif',preferAnimation:true});
+    await decoder.tracks.ready;
+    const track=decoder.tracks.selectedTrack;
+    const frameCount=track.frameCount;
+    const width=track.codedWidth || track.displayWidth;
+    const height=track.codedHeight || track.displayHeight;
+    if(!frameCount || !width || !height) throw new Error('No animated frames were found in this GIF.');
+    if(frameCount>600) throw new Error('This GIF has more than 600 frames. Please use a shorter GIF.');
 
- try{
-  engine=await loadLocalFFmpeg();
-  const ff=engine.ff,fetchFile=engine.fetchFile;
+    const canvas=document.createElement('canvas');
+    // H.264/MP4 commonly requires even dimensions.
+    canvas.width=width%2?width-1:width;
+    canvas.height=height%2?height-1:height;
+    if(canvas.width<2 || canvas.height<2) throw new Error('GIF dimensions are too small for MP4 encoding.');
+    const ctx=canvas.getContext('2d',{alpha:false,willReadFrequently:false});
+    ctx.fillStyle='#000'; ctx.fillRect(0,0,canvas.width,canvas.height);
 
-  ff.on('log',({message})=>console.log('[FFmpeg]',message));
-  ff.on('progress',p=>{
-   if(p&&typeof p.progress==='number'){
-    const pct=Math.max(10,Math.min(95,Math.round(p.progress*100)));
-    bar.style.width=pct+'%';
-    status.textContent=`Converting GIF to MP4… ${pct}%`;
-   }
-  });
+    const {Output,Mp4OutputFormat,BufferTarget,CanvasSource,Quality}=Mediabunny;
+    const output=new Output({format:new Mp4OutputFormat(),target:new BufferTarget()});
+    const source=new CanvasSource(canvas,{codec:'avc',quality:new Quality({bitrate:Math.min(8_000_000,Math.max(1_000_000,canvas.width*canvas.height*3))})});
+    output.addVideoTrack(source);
+    await output.start();
 
-  bar.style.width='25%';
-  status.textContent='Reading GIF…';
-  await ff.writeFile('input.gif',await fetchFile(gifSelected));
+    let timestamp=0;
+    for(let i=0;i<frameCount;i++){
+      status.textContent=`Encoding frame ${i+1} of ${frameCount}…`;
+      const result=await decoder.decode({frameIndex:i,completeFramesOnly:true});
+      const frame=result.image;
+      const duration=Math.max(0.02,Math.min(10,(frame.duration||100000)/1_000_000));
+      ctx.fillStyle='#000';
+      ctx.fillRect(0,0,canvas.width,canvas.height);
+      ctx.drawImage(frame,0,0,canvas.width,canvas.height);
+      frame.close();
+      await source.add(timestamp,duration);
+      timestamp+=duration;
+      bar.style.width=`${10+Math.round(((i+1)/frameCount)*80)}%`;
+    }
 
-  bar.style.width='35%';
-  status.textContent='Converting GIF to MP4…';
-
-  const code=await ff.exec([
-   '-i','input.gif',
-   '-vf','scale=trunc(iw/2)*2:trunc(ih/2)*2',
-   '-c:v','libx264',
-   '-preset','veryfast',
-   '-crf','20',
-   '-pix_fmt','yuv420p',
-   '-movflags','+faststart',
-   'output.mp4'
-  ]);
-
-  if(code!==0)throw new Error('FFmpeg exited with code '+code);
-
-  bar.style.width='92%';
-  status.textContent='Preparing download…';
-
-  const data=await ff.readFile('output.mp4');
-  const bytes=data instanceof Uint8Array?data:new Uint8Array(data);
-  const blob=new Blob([bytes],{type:'video/mp4'});
-
-  if(blob.size<100)throw new Error('Empty MP4 generated');
-
-  dl(blob,'converted-gif.mp4');
-
-  bar.style.width='100%';
-  status.textContent=`Done — MP4 downloaded (${(blob.size/1024/1024).toFixed(2)} MB).`;
-
-  try{await ff.deleteFile('input.gif')}catch(_){}
-  try{await ff.deleteFile('output.mp4')}catch(_){}
-
- }catch(e){
-  console.error('GIF → MP4:',e);
-  bar.style.width='0%';
-
-  const missing=/404|Failed to fetch|NetworkError|fetch|worker|core/i.test(String(e));
-
-  if(missing){
-   status.innerHTML='<b>FFmpeg files are not installed in this GitHub repository yet.</b><br><br>Upload the 3 files into an <code>ffmpeg</code> folder, then refresh the page.';
-  }else{
-   status.textContent='GIF conversion failed. Try another animated GIF.';
+    status.textContent='Finalizing MP4…'; bar.style.width='94%';
+    await output.finalize();
+    const buffer=output.target.buffer;
+    if(!buffer || buffer.byteLength<1000) throw new Error('The MP4 output was empty.');
+    const blob=new Blob([buffer],{type:'video/mp4'});
+    const base=gifSelected.name.replace(/\.gif$/i,'')||'converted-gif';
+    dl(blob,`${base}.mp4`);
+    decoder.close();
+    bar.style.width='100%';
+    status.textContent=`Done — ${frameCount} frame${frameCount===1?'':'s'} converted to MP4 and downloaded.`;
+  }catch(e){
+    console.error('GIF → MP4 error:',e);
+    bar.style.width='0%';
+    status.textContent=e?.message||'Conversion failed. Use the latest Chrome or Edge and try again.';
+  }finally{
+    btn.disabled=false;
   }
- }finally{
-  btn.disabled=false;
- }
 };
+
 /* Video tools */
 function videoMeta(input,out,dropId){
  const handler=files=>{
