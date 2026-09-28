@@ -135,6 +135,7 @@ footer{text-align:center;padding:30px;color:var(--muted);border-top:1px solid va
 <section class="page" id="gifmp4">
 <button class="back" onclick="home()">← Back to Essentials</button>
 <div class="panel"><h2>GIF to MP4 Converter</h2><p class="desc">Convert an animated GIF into MP4 directly in the browser using FFmpeg WebAssembly.</p>
+<div class="note"><b>One-time GitHub setup:</b> this converter expects an <code>ffmpeg</code> folder beside <code>index.html</code> containing <code>ffmpeg-core.js</code>, <code>ffmpeg-core.wasm</code> and <code>ffmpeg-core.worker.js</code>. This makes the converter independent of external CDN loading.</div>
 <label class="drop" id="gifDrop" for="gifFile"><input id="gifFile" type="file" accept=".gif,image/gif"><strong>🎞️ Choose or drop an animated GIF</strong><span>Conversion runs locally in your browser using FFmpeg WebAssembly.</span></label>
 <div class="row"><button class="btn blue" id="gifBtn" disabled>Convert to MP4</button></div>
 <div class="progress"><i id="gifProgress"></i></div><div id="gifStatus" class="note">Choose a GIF to begin.</div></div></section>
@@ -340,32 +341,129 @@ $('socialBtn').onclick=async()=>{
  dl(await canvasBlob(c,'image/jpeg',+$('socialQuality').value/100),'social-media-image.jpg');
 };
 
-/* GIF -> MP4 */
+/* GIF -> MP4 — local FFmpeg core for GitHub Pages */
 let gifSelected=null;
-function handleGIF(files){gifSelected=files&&files[0];$('gifBtn').disabled=!gifSelected;if(gifSelected)$('gifStatus').textContent=`Selected: ${gifSelected.name} · ${(gifSelected.size/1024/1024).toFixed(2)} MB`;}
-setupDrop('gifDrop','gifFile',handleGIF);
-const gifInput=$('gifFile');gifInput.addEventListener('change',()=>handleGIF(gifInput.files));
+
+function setupGifDrop(){
+ const d=$('gifDrop'),i=$('gifFile');
+ const handle=files=>{
+  gifSelected=files&&files[0];
+  $('gifBtn').disabled=!gifSelected;
+  if(!gifSelected)return;
+  const ok=gifSelected.type==='image/gif'||gifSelected.name.toLowerCase().endsWith('.gif');
+  if(!ok){$('gifBtn').disabled=true;$('gifStatus').textContent='Please select a GIF file.';return}
+  $('gifStatus').textContent=`Selected: ${gifSelected.name} · ${(gifSelected.size/1024/1024).toFixed(2)} MB`;
+ };
+ i.addEventListener('change',()=>handle(i.files));
+ d.addEventListener('dragover',e=>{e.preventDefault();d.classList.add('drag')});
+ d.addEventListener('dragleave',()=>d.classList.remove('drag'));
+ d.addEventListener('drop',e=>{e.preventDefault();d.classList.remove('drag');handle(e.dataTransfer.files)});
+}
+setupGifDrop();
+
+let localFFmpeg=null;
+
+async function loadLocalFFmpeg(){
+ if(localFFmpeg)return localFFmpeg;
+
+ const {FFmpeg}=await import('https://cdn.jsdelivr.net/npm/@ffmpeg/ffmpeg@0.12.10/dist/esm/index.js');
+ const {fetchFile}=await import('https://cdn.jsdelivr.net/npm/@ffmpeg/util@0.12.1/dist/esm/index.js');
+
+ const ff=new FFmpeg();
+
+ /*
+   IMPORTANT:
+   Put these three files in the GitHub repository:
+     /ffmpeg/ffmpeg-core.js
+     /ffmpeg/ffmpeg-core.wasm
+     /ffmpeg/ffmpeg-core.worker.js
+
+   This avoids runtime CDN/CORS problems on GitHub Pages.
+ */
+ await ff.load({
+   coreURL:new URL('./ffmpeg/ffmpeg-core.js',location.href).href,
+   wasmURL:new URL('./ffmpeg/ffmpeg-core.wasm',location.href).href,
+   workerURL:new URL('./ffmpeg/ffmpeg-core.worker.js',location.href).href
+ });
+
+ localFFmpeg={ff,fetchFile};
+ return localFFmpeg;
+}
+
 $('gifBtn').onclick=async()=>{
  if(!gifSelected)return;
- $('gifBtn').disabled=true;$('gifStatus').textContent='Loading FFmpeg…';$('gifProgress').style.width='10%';
- try{
-  const {FFmpeg}=await import('https://cdn.jsdelivr.net/npm/@ffmpeg/ffmpeg@0.12.10/dist/esm/index.js');
-  const {fetchFile}=await import('https://cdn.jsdelivr.net/npm/@ffmpeg/util@0.12.1/dist/esm/index.js');
-  const ff=new FFmpeg();
-  await ff.load({coreURL:'https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.6/dist/esm/ffmpeg-core.js',wasmURL:'https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.6/dist/esm/ffmpeg-core.wasm'});
-  $('gifProgress').style.width='40%';$('gifStatus').textContent='Reading GIF…';
-  await ff.writeFile('input.gif',await fetchFile(gifSelected));
-  await ff.exec(['-i','input.gif','-movflags','faststart','-pix_fmt','yuv420p','-vf','scale=trunc(iw/2)*2:trunc(ih/2)*2','output.mp4']);
-  $('gifProgress').style.width='85%';$('gifStatus').textContent='Preparing MP4…';
-  const data=await ff.readFile('output.mp4'),blob=new Blob([data.buffer],{type:'video/mp4'});
-  dl(blob,'converted-gif.mp4');$('gifProgress').style.width='100%';$('gifStatus').textContent='Done — MP4 downloaded.';ff.terminate();
- }catch(e){console.error(e);$('gifStatus').textContent='Conversion failed. Try a smaller animated GIF in Chrome or Edge.'}
- $('gifBtn').disabled=false;
-};
-function getYouTubeId(v){try{const u=new URL(v.trim());if(u.hostname==='youtu.be')return u.pathname.slice(1).split('/')[0];if(['youtube.com','www.youtube.com','m.youtube.com'].includes(u.hostname)){if(u.pathname==='/watch')return u.searchParams.get('v');if(u.pathname.startsWith('/shorts/'))return u.pathname.split('/')[2];if(u.pathname.startsWith('/embed/'))return u.pathname.split('/')[2]}}catch(e){}return null}
-function processYT(){const id=getYouTubeId($('ytUrl').value);if(!id){$('ytResult').innerHTML='<div class="note">Please enter a valid YouTube video URL.</div>';return}const watch='https://www.youtube.com/watch?v='+encodeURIComponent(id),embed='https://www.youtube.com/embed/'+encodeURIComponent(id);$('ytResult').innerHTML='<div class="note"><b>Video ID:</b> '+id+'</div><div class="row"><button class="btn blue" onclick="window.open(\''+watch+'\',\'_blank\')">Open on YouTube</button><button class="btn light" onclick="navigator.clipboard.writeText(\''+embed+'\')">Copy Embed URL</button></div><div style="margin-top:20px;aspect-ratio:16/9;background:#000;border-radius:14px;overflow:hidden"><iframe src="'+embed+'" style="width:100%;height:100%;border:0" allowfullscreen loading="lazy"></iframe></div>'}
-function clearYT(){$('ytUrl').value='';$('ytResult').innerHTML=''}
 
+ const btn=$('gifBtn'),status=$('gifStatus'),bar=$('gifProgress');
+ btn.disabled=true;bar.style.width='5%';
+ status.textContent='Loading local FFmpeg engine…';
+
+ let engine=null;
+
+ try{
+  engine=await loadLocalFFmpeg();
+  const ff=engine.ff,fetchFile=engine.fetchFile;
+
+  ff.on('log',({message})=>console.log('[FFmpeg]',message));
+  ff.on('progress',p=>{
+   if(p&&typeof p.progress==='number'){
+    const pct=Math.max(10,Math.min(95,Math.round(p.progress*100)));
+    bar.style.width=pct+'%';
+    status.textContent=`Converting GIF to MP4… ${pct}%`;
+   }
+  });
+
+  bar.style.width='25%';
+  status.textContent='Reading GIF…';
+  await ff.writeFile('input.gif',await fetchFile(gifSelected));
+
+  bar.style.width='35%';
+  status.textContent='Converting GIF to MP4…';
+
+  const code=await ff.exec([
+   '-i','input.gif',
+   '-vf','scale=trunc(iw/2)*2:trunc(ih/2)*2',
+   '-c:v','libx264',
+   '-preset','veryfast',
+   '-crf','20',
+   '-pix_fmt','yuv420p',
+   '-movflags','+faststart',
+   'output.mp4'
+  ]);
+
+  if(code!==0)throw new Error('FFmpeg exited with code '+code);
+
+  bar.style.width='92%';
+  status.textContent='Preparing download…';
+
+  const data=await ff.readFile('output.mp4');
+  const bytes=data instanceof Uint8Array?data:new Uint8Array(data);
+  const blob=new Blob([bytes],{type:'video/mp4'});
+
+  if(blob.size<100)throw new Error('Empty MP4 generated');
+
+  dl(blob,'converted-gif.mp4');
+
+  bar.style.width='100%';
+  status.textContent=`Done — MP4 downloaded (${(blob.size/1024/1024).toFixed(2)} MB).`;
+
+  try{await ff.deleteFile('input.gif')}catch(_){}
+  try{await ff.deleteFile('output.mp4')}catch(_){}
+
+ }catch(e){
+  console.error('GIF → MP4:',e);
+  bar.style.width='0%';
+
+  const missing=/404|Failed to fetch|NetworkError|fetch|worker|core/i.test(String(e));
+
+  if(missing){
+   status.innerHTML='<b>FFmpeg files are not installed in this GitHub repository yet.</b><br><br>Upload the 3 files into an <code>ffmpeg</code> folder, then refresh the page.';
+  }else{
+   status.textContent='GIF conversion failed. Try another animated GIF.';
+  }
+ }finally{
+  btn.disabled=false;
+ }
+};
 /* Video tools */
 function videoMeta(input,out,dropId){
  const handler=files=>{
