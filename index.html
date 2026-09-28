@@ -17,16 +17,17 @@ nav{height:72px;background:#fff;border-bottom:1px solid var(--line);display:flex
 .cat{background:var(--card);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);overflow:hidden}.head{width:100%;border:0;background:#fff;padding:22px;text-align:left;cursor:pointer;font-size:18px;font-weight:800;display:flex;justify-content:space-between}.head span{color:var(--accent)}.list{display:none;border-top:1px solid var(--line);padding:8px}.cat.open .list{display:block}.tool{width:100%;padding:15px;border:0;background:#fff;border-radius:10px;text-align:left;cursor:pointer;font-size:14px;color:var(--ink)}.tool:hover{background:var(--soft);color:var(--accent)}
 .page{display:none;max-width:1100px;margin:35px auto 80px;padding:0 5%}.page.active{display:block}.back{border:0;background:none;color:var(--accent);font-weight:700;cursor:pointer;padding:0;margin-bottom:18px}
 .panel{background:#fff;border:1px solid var(--line);border-radius:20px;padding:28px;box-shadow:var(--shadow)}.panel h2{margin-top:0;font-size:30px}.desc{color:var(--muted);line-height:1.6}
-.drop{border:2px dashed #c8d1df;border-radius:16px;padding:35px;text-align:center;background:#fafcff;cursor:pointer}.drop.drag{background:#eef4ff;border-color:var(--accent);transform:scale(1.01)}.drop input{display:none}.drop{user-select:none;transition:background .18s,border-color .18s,box-shadow .18s,transform .18s}.drop:hover{border-color:#8eb0f4;background:#f7faff;box-shadow:0 8px 22px rgba(37,99,235,.07)}.drop:focus-within{outline:3px solid #dbeafe}.drop strong{display:block;font-size:17px;margin-bottom:7px}.drop span{color:var(--muted);font-size:13px}.gif-upload{position:relative;display:flex;align-items:center;gap:18px;text-align:left;padding:24px 26px;border:1px solid #d9e2f0;border-radius:18px;background:linear-gradient(135deg,#f8fbff,#fff);box-shadow:0 8px 24px rgba(16,24,40,.05);overflow:hidden}.gif-upload:before{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(37,99,235,.055),transparent 55%);pointer-events:none}.gif-upload .gif-badge{position:relative;flex:0 0 58px;width:58px;height:58px;border-radius:16px;display:grid;place-items:center;background:#eaf1ff;color:#2563eb;font-size:14px;font-weight:900;letter-spacing:.5px;border:1px solid #d4e2ff}.gif-upload .gif-copy{position:relative;flex:1;min-width:0}.gif-upload strong{font-size:16px;margin:0 0 5px}.gif-upload span{display:block;line-height:1.45}.gif-upload .gif-action{position:relative;flex:0 0 auto;padding:10px 15px;border-radius:10px;background:#2563eb;color:#fff;font-size:13px;font-weight:800;box-shadow:0 4px 10px rgba(37,99,235,.18)}.gif-upload.drag{background:#eef5ff;border-color:#2563eb;box-shadow:0 12px 28px rgba(37,99,235,.12)}.gif-upload.drag .gif-badge{background:#dbeafe}.gif-meta{margin-top:12px;padding:0 3px;color:#667085;font-size:12px}.gif-status{margin-top:14px!important}.gif-progress{height:8px!important;margin-top:16px!important}
+.drop{position:relative;display:flex;align-items:center;gap:18px;min-height:104px;padding:20px 22px;border:1px solid #d9e2ef;border-radius:18px;background:linear-gradient(135deg,#fbfdff 0%,#f6f9ff 100%);cursor:pointer;overflow:hidden;user-select:none;transition:background .18s,border-color .18s,box-shadow .18s,transform .18s}.drop:before{content:"";position:absolute;inset:0;background:linear-gradient(100deg,rgba(37,99,235,.045),transparent 55%);pointer-events:none}.drop:hover{border-color:#9bb8ee;background:#f8fbff;box-shadow:0 10px 28px rgba(16,24,40,.07);transform:translateY(-1px)}.drop.drag{background:#eef5ff;border-color:var(--accent);box-shadow:0 12px 30px rgba(37,99,235,.12);transform:none}.drop:focus-within{outline:3px solid #dbeafe;outline-offset:2px}.drop input{display:none}.drop .upload-badge{position:relative;flex:0 0 58px;width:58px;height:58px;border-radius:16px;display:grid;place-items:center;background:#eaf1ff;border:1px solid #d5e3ff;color:#245fca;font-size:12px;font-weight:900;letter-spacing:.4px}.drop .upload-copy{position:relative;flex:1;min-width:0}.drop strong{display:block;font-size:16px;line-height:1.25;margin:0 0 6px;color:#172033}.drop span{display:block;color:var(--muted);font-size:13px;line-height:1.45}.drop .upload-action{position:relative;flex:0 0 auto;padding:10px 15px;border-radius:10px;background:#2563eb;color:#fff;font-size:13px;font-weight:800;box-shadow:0 4px 12px rgba(37,99,235,.18)}.drop.drag .upload-badge{background:#dbeafe;border-color:#bfd5ff}.drop.drag .upload-action{background:#1d4ed8}.gif-upload{position:relative;display:flex;align-items:center;gap:18px;text-align:left;padding:24px 26px;border:1px solid #d9e2f0;border-radius:18px;background:linear-gradient(135deg,#f8fbff,#fff);box-shadow:0 8px 24px rgba(16,24,40,.05);overflow:hidden}.gif-upload:before{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(37,99,235,.055),transparent 55%);pointer-events:none}.gif-upload .gif-badge{position:relative;flex:0 0 58px;width:58px;height:58px;border-radius:16px;display:grid;place-items:center;background:#eaf1ff;color:#2563eb;font-size:14px;font-weight:900;letter-spacing:.5px;border:1px solid #d4e2ff}.gif-upload .gif-copy{position:relative;flex:1;min-width:0}.gif-upload strong{font-size:16px;margin:0 0 5px}.gif-upload span{display:block;line-height:1.45}.gif-upload .gif-action{position:relative;flex:0 0 auto;padding:10px 15px;border-radius:10px;background:#2563eb;color:#fff;font-size:13px;font-weight:800;box-shadow:0 4px 10px rgba(37,99,235,.18)}.gif-upload.drag{background:#eef5ff;border-color:#2563eb;box-shadow:0 12px 28px rgba(37,99,235,.12)}.gif-upload.drag .gif-badge{background:#dbeafe}.gif-meta{margin-top:12px;padding:0 3px;color:#667085;font-size:12px}.gif-status{margin-top:14px!important}.gif-progress{height:8px!important;margin-top:16px!important}
 .row{display:flex;gap:12px;flex-wrap:wrap;margin-top:18px}.btn{border:0;border-radius:10px;padding:12px 17px;background:var(--brand);color:#fff;font-weight:700;cursor:pointer}.btn.blue{background:var(--accent)}.btn.light{background:#eef2f6;color:#172033}.btn:disabled{opacity:.5;cursor:not-allowed}
 .controls{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:18px}.field{background:#f8fafc;border:1px solid var(--line);border-radius:12px;padding:13px}.field label{display:block;font-size:12px;color:var(--muted);margin-bottom:7px}.field input,.field select{width:100%;padding:10px;border:1px solid var(--line);border-radius:8px;background:#fff}
 .preview{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:15px;margin-top:22px}.thumb{border:1px solid var(--line);border-radius:12px;padding:10px;background:#fff}.thumb img{width:100%;height:150px;object-fit:contain;background:#f2f4f7;border-radius:8px}.thumb small{display:block;color:var(--muted);margin:8px 0}.progress{height:9px;background:#e9edf3;border-radius:10px;overflow:hidden;margin-top:18px}.progress i{display:block;height:100%;width:0;background:var(--accent);transition:.2s}
 .note{padding:13px 15px;background:#f8fafc;border:1px solid var(--line);border-radius:10px;color:var(--muted);font-size:13px;margin-top:15px}
 footer{text-align:center;padding:30px;color:var(--muted);border-top:1px solid var(--line);background:#fff}
 @media(max-width:850px){.grid{grid-template-columns:1fr 1fr}.controls{grid-template-columns:1fr 1fr}}
-@media(max-width:560px){nav{padding:0 4%}.clock{font-size:12px}.grid{grid-template-columns:1fr}.hero{padding-top:55px}.panel{padding:20px}.controls{grid-template-columns:1fr}}
+@media(max-width:560px){nav{padding:0 4%}.clock{font-size:12px}.grid{grid-template-columns:1fr}.hero{padding-top:55px}.panel{padding:20px}.controls{grid-template-columns:1fr}.drop{align-items:flex-start;padding:18px;gap:13px}.drop .upload-badge{flex-basis:48px;width:48px;height:48px;border-radius:13px}.drop .upload-action{padding:9px 11px;font-size:12px}.drop .upload-copy span{font-size:12px}}
 </style>
 <script src="https://unpkg.com/mediabunny@1.60.0/dist/bundles/mediabunny.cjs"></script>
+<script src="https://unpkg.com/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
 </head>
 <body>
 
@@ -73,7 +74,7 @@ footer{text-align:center;padding:30px;color:var(--muted);border-top:1px solid va
 <section class="page" id="pdfjpeg">
 <button class="back" onclick="home()">← Back to Essentials</button>
 <div class="panel"><h2>PDF to JPEG</h2><p class="desc">Convert every page of a PDF into a high-quality JPEG directly in your browser.</p>
-<label class="drop" id="pdfDrop" for="pdfFile"><input id="pdfFile" type="file" accept=".pdf,application/pdf"><strong>📄 Drop PDF here or click to choose</strong><span>PDF files only · processed on this device</span></label>
+<label class="drop" id="pdfDrop" for="pdfFile"><input id="pdfFile" type="file" accept=".pdf,application/pdf"><div class="upload-badge">PDF</div><div class="upload-copy"><strong>Drop a PDF here or choose a file</strong><span>PDF files only · processed locally on this device</span></div><div class="upload-action">Choose PDF</div></label>
 <div class="row"><button class="btn blue" onclick="document.getElementById('pdfFile').click()">Choose PDF</button><button class="btn light" id="pdfAll" disabled>Download All</button></div>
 <div class="progress"><i id="pdfProgress"></i></div><div class="preview" id="pdfPreview"></div></div></section>
 
@@ -81,7 +82,7 @@ footer{text-align:center;padding:30px;color:var(--muted);border-top:1px solid va
 <section class="page" id="jpegpdf">
 <button class="back" onclick="home()">← Back to Essentials</button>
 <div class="panel"><h2>JPEG / PNG to PDF</h2><p class="desc">Select multiple images, arrange them in the selected order, and download one PDF.</p>
-<label class="drop" id="imgsDrop" for="imgsFile"><input id="imgsFile" type="file" accept="image/jpeg,image/png,image/webp" multiple><strong>🖼️ Drop images here or click to choose</strong><span>JPG, PNG and WebP · multiple files supported</span></label>
+<label class="drop" id="imgsDrop" for="imgsFile"><input id="imgsFile" type="file" accept="image/jpeg,image/png,image/webp" multiple><div class="upload-badge">IMG</div><div class="upload-copy"><strong>Drop images here or choose multiple files</strong><span>JPG, PNG and WebP · select several images at once</span></div><div class="upload-action">Choose Images</div></label>
 <div class="row"><button class="btn blue" onclick="document.getElementById('imgsFile').click()">Choose Images</button><button class="btn" id="makePdf" disabled>Create PDF</button></div>
 <div class="preview" id="imgPreview"></div></div></section>
 
@@ -89,7 +90,7 @@ footer{text-align:center;padding:30px;color:var(--muted);border-top:1px solid va
 <section class="page" id="resize">
 <button class="back" onclick="home()">← Back to Essentials</button>
 <div class="panel"><h2>Image Resizer</h2><p class="desc">Resize an image to exact pixel dimensions or use a percentage. The original file is never uploaded.</p>
-<label class="drop" id="resizeDrop" for="resizeFile"><input id="resizeFile" type="file" accept="image/*"><strong>🖼️ Choose or drop an image</strong><span>JPG, PNG, WebP and browser-supported image formats</span></label>
+<label class="drop" id="resizeDrop" for="resizeFile"><input id="resizeFile" type="file" accept="image/*"><div class="upload-badge">IMG</div><div class="upload-copy"><strong>Drop an image here or choose a file</strong><span>JPG, PNG, WebP and browser-supported image formats</span></div><div class="upload-action">Choose Image</div></label>
 <div class="controls">
 <div class="field"><label>Width (px)</label><input id="rw" type="number" min="1"></div>
 <div class="field"><label>Height (px)</label><input id="rh" type="number" min="1"></div>
@@ -102,7 +103,7 @@ footer{text-align:center;padding:30px;color:var(--muted);border-top:1px solid va
 <section class="page" id="compress">
 <button class="back" onclick="home()">← Back to Essentials</button>
 <div class="panel"><h2>Image Size Compressor</h2><p class="desc">Reduce image file size by adjusting quality and output format. Great for email, websites and social media.</p>
-<label class="drop" id="compDrop" for="compFile"><input id="compFile" type="file" accept="image/*"><strong>📦 Choose or drop an image</strong><span>Compression happens locally in your browser.</span></label>
+<label class="drop" id="compDrop" for="compFile"><input id="compFile" type="file" accept="image/*"><div class="upload-badge">IMG</div><div class="upload-copy"><strong>Drop an image here or choose a file</strong><span>Compression happens locally in your browser</span></div><div class="upload-action">Choose Image</div></label>
 <div class="controls">
 <div class="field"><label>Quality: <b id="qVal">75</b>%</label><input id="quality" type="range" min="10" max="100" value="75"></div>
 <div class="field"><label>Output format</label><select id="compFormat"><option value="image/jpeg">JPEG</option><option value="image/webp">WebP</option><option value="image/png">PNG</option></select></div>
@@ -115,7 +116,7 @@ footer{text-align:center;padding:30px;color:var(--muted);border-top:1px solid va
 <section class="page" id="socialresize">
 <button class="back" onclick="home()"></button>
 <div class="panel"><h2>Social Media Image Resizer</h2><p class="desc">Create correctly sized images for common social media placements.</p>
-<label class="drop" id="socialDrop" for="socialFile"><input id="socialFile" type="file" accept="image/*"><strong>📱 Choose or drop an image</strong><span>Then select the required platform size.</span></label>
+<label class="drop" id="socialDrop" for="socialFile"><input id="socialFile" type="file" accept="image/*"><div class="upload-badge">SOC</div><div class="upload-copy"><strong>Drop an image here or choose a file</strong><span>Select your social platform size after choosing the image</span></div><div class="upload-action">Choose Image</div></label>
 <div class="controls">
 <div class="field"><label>Preset</label><select id="socialPreset">
 <option value="1080x1080">Instagram Square — 1080×1080</option>
@@ -139,7 +140,7 @@ footer{text-align:center;padding:30px;color:var(--muted);border-top:1px solid va
 <label class="drop gif-upload" id="gifDrop" for="gifFile">
 <input id="gifFile" type="file" accept=".gif,image/gif">
 <div class="gif-badge">GIF</div>
-<div class="gif-copy"><strong>Drop your animated GIF here</strong><span>or click anywhere in this box to choose a file · conversion stays on your device</span></div>
+<div class="gif-copy"><strong>Drop your animated GIF here</strong><span>Animated GIF only · conversion stays on your device</span></div>
 <div class="gif-action">Choose GIF</div>
 </label>
 <div class="gif-meta">Supports animated GIF files · no upload · no server processing</div>
@@ -161,13 +162,13 @@ footer{text-align:center;padding:30px;color:var(--muted);border-top:1px solid va
 <section class="page" id="videoinfo">
 <button class="back" onclick="home()">← Back to Essentials</button>
 <div class="panel"><h2>Video Info / Metadata</h2><p class="desc">Inspect basic browser-readable video properties without uploading the file.</p>
-<label class="drop" id="videoInfoDrop" for="videoInfoFile"><input id="videoInfoFile" type="file" accept="video/*,.mp4,.webm,.mov,.m4v"><strong>🎬 Choose or drop a video</strong><span>MP4, WebM, MOV and browser-supported formats</span></label><div id="videoInfoOut" class="note">No video selected.</div></div></section>
+<label class="drop" id="videoInfoDrop" for="videoInfoFile"><input id="videoInfoFile" type="file" accept="video/*,.mp4,.webm,.mov,.m4v"><div class="upload-badge">VIDEO</div><div class="upload-copy"><strong>Drop a video here or choose a file</strong><span>MP4, WebM, MOV and browser-supported formats</span></div><div class="upload-action">Choose Video</div></label><div id="videoInfoOut" class="note">No video selected.</div></div></section>
 
 <!-- VIDEO DURATION -->
 <section class="page" id="videotimer">
 <button class="back" onclick="home()">← Back to Essentials</button>
 <div class="panel"><h2>Video Duration Calculator</h2><p class="desc">Select a video and get its exact duration, frame size and estimated file size.</p>
-<label class="drop" id="durationDrop" for="durationFile"><input id="durationFile" type="file" accept="video/*,.mp4,.webm,.mov,.m4v"><strong>⏱️ Choose or drop a video</strong><span>Information is read locally.</span></label><div id="durationOut" class="note">No video selected.</div></div></section>
+<label class="drop" id="durationDrop" for="durationFile"><input id="durationFile" type="file" accept="video/*,.mp4,.webm,.mov,.m4v"><div class="upload-badge">VIDEO</div><div class="upload-copy"><strong>Drop a video here or choose a file</strong><span>Duration and dimensions are read locally</span></div><div class="upload-action">Choose Video</div></label><div id="durationOut" class="note">No video selected.</div></div></section>
 
 <!-- COUNTER -->
 <section class="page" id="charcount">
@@ -277,18 +278,33 @@ async function handleImages(files){
 setupDrop('imgsDrop','imgsFile',handleImages);
 $('makePdf').onclick=async()=>{
  if(!selectedImages.length)return;
+ const btn=$('makePdf'); btn.disabled=true; btn.textContent='Creating PDF…';
  try{
-  const {jsPDF}=await import('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.es.min.js');
+  if(!window.jspdf||!window.jspdf.jsPDF) throw new Error('PDF engine could not load. Please refresh the page.');
+  const {jsPDF}=window.jspdf;
   let doc=null;
   for(let i=0;i<selectedImages.length;i++){
-   const im=await loadImage(selectedImages[i]),pageW=210,pageH=297,margin=10;
-   if(i===0)doc=new jsPDF({orientation:'p',unit:'mm',format:'a4'});else doc.addPage();
+   const f=selectedImages[i];
+   const im=await loadImage(f);
+   const pageW=210,pageH=297,margin=10;
+   if(i===0) doc=new jsPDF({orientation:'p',unit:'mm',format:'a4',compress:true});
+   else doc.addPage('a4','p');
    const scale=Math.min((pageW-2*margin)/im.width,(pageH-2*margin)/im.height);
    const w=im.width*scale,h=im.height*scale;
-   doc.addImage(im,'JPEG',(pageW-w)/2,(pageH-h)/2,w,h);
+   // Convert every source image to JPEG first so PNG/WebP and transparency are handled consistently.
+   const c=document.createElement('canvas'); c.width=im.width; c.height=im.height;
+   const ctx=c.getContext('2d'); ctx.fillStyle='#fff'; ctx.fillRect(0,0,c.width,c.height); ctx.drawImage(im,0,0);
+   const dataUrl=c.toDataURL('image/jpeg',.92);
+   doc.addImage(dataUrl,'JPEG',(pageW-w)/2,(pageH-h)/2,w,h,undefined,'FAST');
   }
   doc.save('gopali-images.pdf');
- }catch(e){console.error(e);alert('Could not create the PDF. Please try again.')}
+  btn.textContent='PDF Created ✓';
+  setTimeout(()=>{btn.textContent='Create PDF';btn.disabled=false},1200);
+ }catch(e){
+  console.error('JPEG/PNG → PDF error:',e);
+  alert('Could not create the PDF. Please try again or choose JPG/PNG/WebP images.');
+  btn.textContent='Create PDF'; btn.disabled=false;
+ }
 };
 
 /* Image Resizer */
@@ -355,8 +371,6 @@ function handleGIF(files){
   if(gifSelected) $('gifStatus').textContent=`Selected: ${gifSelected.name} · ${(gifSelected.size/1024/1024).toFixed(2)} MB`;
 }
 setupDrop('gifDrop','gifFile',handleGIF);
-const gifInput=$('gifFile');
-gifInput.addEventListener('change',()=>handleGIF(gifInput.files));
 
 function gifFrameToImageData(frame){
   return new ImageData(new Uint8ClampedArray(frame.patch), frame.dims.width, frame.dims.height);
@@ -471,15 +485,48 @@ $('gifBtn').onclick=async()=>{
 };
 
 /* Video tools */
+async function getVideoMetadataTags(file){
+ try{
+  if(typeof Mediabunny==='undefined'||!Mediabunny.Input||!Mediabunny.BlobSource||!Mediabunny.ALL_FORMATS)return null;
+  const input=new Mediabunny.Input({formats:Mediabunny.ALL_FORMATS,source:new Mediabunny.BlobSource(file)});
+  const tags=await input.getMetadataTags();
+  if(input.dispose)input.dispose();
+  return tags||null;
+ }catch(e){ console.debug('Metadata tags unavailable',e); return null; }
+}
+function formatDateTime(d){
+ if(!(d instanceof Date)||Number.isNaN(d.getTime()))return '';
+ return d.toLocaleString([], {year:'numeric',month:'short',day:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit'});
+}
 function videoMeta(input,out,dropId){
- const handler=files=>{
+ const handler=async files=>{
   const f=files&&files[0];if(!f)return;
+  out.innerHTML='<b>Reading video information…</b>';
   const u=URL.createObjectURL(f),v=document.createElement('video');v.preload='metadata';
-  v.onloadedmetadata=()=>{out.innerHTML=`<b>${f.name}</b><br>Type: ${f.type||'Unknown'}<br>Size: ${(f.size/1024/1024).toFixed(2)} MB<br>Resolution: ${v.videoWidth} × ${v.videoHeight}px<br>Duration: ${v.duration.toFixed(2)} seconds`;URL.revokeObjectURL(u)};
-  v.onerror=()=>{out.textContent='The browser could not read this video format.';URL.revokeObjectURL(u)};v.src=u;
+  v.onloadedmetadata=async()=>{
+   const tags=await getVideoMetadataTags(f);
+   const recorded=tags?.date instanceof Date ? formatDateTime(tags.date) : (tags?.date ? String(tags.date) : '');
+   const modified=formatDateTime(new Date(f.lastModified));
+   const lines=[
+    `<b>${f.name}</b>`,
+    `Type: ${f.type||'Unknown'}`,
+    `Size: ${(f.size/1024/1024).toFixed(2)} MB`,
+    `Resolution: ${v.videoWidth} × ${v.videoHeight}px`,
+    `Duration: ${v.duration.toFixed(2)} seconds`,
+    recorded ? `Video recorded / creation date: ${recorded}` : `Video recorded / creation date: Not embedded in the file`,
+    `File modified: ${modified}`
+   ];
+   if(tags?.title)lines.push(`Title: ${tags.title}`);
+   if(tags?.artist)lines.push(`Artist / Creator: ${tags.artist}`);
+   out.innerHTML=lines.join('<br>');
+   URL.revokeObjectURL(u);
+  };
+  v.onerror=()=>{out.textContent='The browser could not read this video format.';URL.revokeObjectURL(u)};
+  v.src=u;
  };
  setupDrop(dropId,input.id,handler);
 }
+
 videoMeta($('videoInfoFile'),$('videoInfoOut'),'videoInfoDrop');
 videoMeta($('durationFile'),$('durationOut'),'durationDrop');
 
