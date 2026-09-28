@@ -684,11 +684,99 @@ videoMeta($('durationFile'),$('durationOut'),'durationDrop');
 /* Grammar checker */
 const grammarText=$('grammarText'),grammarBtn=$('grammarBtn'),grammarClear=$('grammarClear'),grammarCopy=$('grammarCopy'),grammarResults=$('grammarResults'),grammarStatus=$('grammarStatus'),grammarCount=$('grammarCount'),grammarProgress=$('grammarProgress');
 let grammarData=null;
+let placeNames=null;
+let placeNamesPromise=null;
+
+// Global populated-place dictionary. It is loaded lazily only when Grammar Check is used.
+// The dataset is based on GeoNames and includes populated places down to roughly 1,000+ population,
+// giving broad coverage of cities, towns and many smaller populated places without slowing the homepage.
+const PLACE_NAMES_URL='https://cdn.jsdelivr.net/gh/joelacus/world-cities@main/world_cities.json';
+
+async function loadPlaceNames(){
+  if(placeNames) return placeNames;
+  if(placeNamesPromise) return placeNamesPromise;
+  placeNamesPromise=(async()=>{
+    try{
+      const res=await fetch(PLACE_NAMES_URL,{cache:'force-cache'});
+      if(!res.ok) throw new Error('Place-name dictionary could not be loaded.');
+      const data=await res.json();
+      const set=new Set();
+      if(Array.isArray(data)){
+        for(const item of data){
+          for(const value of [item?.name,item?.asciiname]){
+            if(typeof value==='string' && value.trim().length>1) set.add(value.trim().toLocaleLowerCase());
+          }
+        }
+      }
+      placeNames=set;
+      return set;
+    }catch(e){
+      console.warn('Place-name dictionary unavailable:',e);
+      placeNames=new Set();
+      return placeNames;
+    }
+  })();
+  return placeNamesPromise;
+}
+
+function isPlaceSpellingMatch(match,text,set){
+  // Only suppress spelling/typo findings. Genuine grammar and style issues remain visible.
+  const issue=String(match?.rule?.issueType||'').toLowerCase();
+  const category=String(match?.rule?.category?.id||'').toLowerCase();
+  const isSpelling=issue==='misspelling'||issue==='typographical'||category==='typos';
+  if(!isSpelling || !set?.size) return false;
+  const original=text.slice(match.offset,match.offset+match.length).trim();
+  if(!original) return false;
+  const normalized=original.toLocaleLowerCase().replace(/[’']/g,"'").replace(/\s+/g,' ');
+  if(set.has(normalized)) return true;
+  const stripped=normalized.replace(/^[^\p{L}\p{N}]+|[^\p{L}\p{N}]+$/gu,'');
+  return stripped!==normalized && set.has(stripped);
+}
+
 function updateGrammarCount(){grammarCount.textContent=`${grammarText.value.length.toLocaleString()} characters`;grammarBtn.disabled=!grammarText.value.trim()}
-grammarText.oninput=updateGrammarCount; grammarClear.onclick=()=>{grammarText.value='';grammarResults.innerHTML='';grammarData=null;grammarCopy.disabled=true;grammarStatus.textContent='Ready to check. Your text is sent to LanguageTool only when you click “Check Grammar”.';grammarProgress.style.width='0';updateGrammarCount()}; updateGrammarCount();
+grammarText.oninput=updateGrammarCount;
+grammarClear.onclick=()=>{grammarText.value='';grammarResults.innerHTML='';grammarData=null;grammarCopy.disabled=true;grammarStatus.textContent='Ready to check. Your text is sent to LanguageTool only when you click “Check Grammar”.';grammarProgress.style.width='0';updateGrammarCount()}; updateGrammarCount();
 function escapeHtml(v){return String(v??'').replace(/[&<>\"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;'}[c]||c))}
 function correctedTextFromMatches(text,matches){let out=text;[...matches].sort((a,b)=>b.offset-a.offset).forEach(m=>{if(m.replacements&&m.replacements[0])out=out.slice(0,m.offset)+m.replacements[0].value+out.slice(m.offset+m.length)});return out}
-grammarBtn.onclick=async()=>{const text=grammarText.value.trim();if(!text)return; if(text.length>20000){grammarStatus.textContent='Please keep the text under 20,000 characters.';return;} grammarBtn.disabled=true;grammarClear.disabled=true;grammarCopy.disabled=true;grammarResults.innerHTML='';grammarProgress.parentElement.classList.add('active');grammarProgress.style.width='25%';grammarStatus.textContent='Checking your text…';try{const body=new URLSearchParams();body.set('text',text);body.set('language',$('grammarLang').value);const res=await fetch('https://api.languagetool.org/v2/check',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded;charset=UTF-8'},body});grammarProgress.style.width='70%';if(!res.ok)throw new Error(`LanguageTool returned HTTP ${res.status}.`);const data=await res.json();grammarData=data;const matches=Array.isArray(data.matches)?data.matches:[];if(!matches.length){grammarStatus.textContent='✓ No grammar, spelling or style issues were found.';grammarResults.innerHTML='<div class="note">Your text looks good.</div>';grammarCopy.disabled=false}else{grammarStatus.textContent=`Found ${matches.length} issue${matches.length===1?'':'s'}. Click a suggested replacement to apply it.`;grammarResults.innerHTML=matches.map((m,i)=>{const original=text.slice(m.offset,m.offset+m.length);const reps=(m.replacements||[]).slice(0,5).map(r=>`<button class="grammar-suggestion" data-index="${i}" data-value="${escapeHtml(r.value)}">${escapeHtml(r.value)}</button>`).join('');return `<div class="grammar-result"><div class="grammar-result-top"><b>${escapeHtml(m.rule?.category?.name||m.rule?.description||'Writing issue')}</b><span class="grammar-quote">${escapeHtml(original||'text')}</span></div><p>${escapeHtml(m.message||'Suggested correction')}</p>${reps?`<div class="grammar-suggestions">${reps}</div>`:'<p>No replacement suggestion available.</p>'}</div>`}).join('');grammarCopy.disabled=false;grammarResults.querySelectorAll('.grammar-suggestion').forEach(btn=>btn.onclick=()=>{const i=Number(btn.dataset.index);const m=matches[i];const value=btn.dataset.value;grammarText.value=grammarText.value.slice(0,m.offset)+value+grammarText.value.slice(m.offset+m.length);updateGrammarCount();grammarStatus.textContent='Suggestion applied. Run Check Grammar again to review the updated text.';grammarCopy.disabled=false})}grammarProgress.style.width='100%';setTimeout(()=>grammarProgress.parentElement.classList.remove('active'),400)}catch(e){console.error(e);grammarStatus.textContent=`Could not check the text. ${e.message||'Please try again.'}`;grammarProgress.parentElement.classList.remove('active')}finally{grammarBtn.disabled=!grammarText.value.trim();grammarClear.disabled=false}};
+
+grammarBtn.onclick=async()=>{
+  const text=grammarText.value.trim();
+  if(!text)return;
+  if(text.length>20000){grammarStatus.textContent='Please keep the text under 20,000 characters.';return;}
+  grammarBtn.disabled=true;grammarClear.disabled=true;grammarCopy.disabled=true;grammarResults.innerHTML='';grammarProgress.parentElement.classList.add('active');grammarProgress.style.width='10%';grammarStatus.textContent='Checking grammar and recognizing place names…';
+  try{
+    const placesPromise=loadPlaceNames();
+    const body=new URLSearchParams();body.set('text',text);body.set('language',$('grammarLang').value);
+    const res=await fetch('https://api.languagetool.org/v2/check',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded;charset=UTF-8'},body});
+    grammarProgress.style.width='65%';
+    if(!res.ok)throw new Error(`LanguageTool returned HTTP ${res.status}.`);
+    const data=await res.json();
+    const places=await placesPromise;
+    grammarData=data;
+    const rawMatches=Array.isArray(data.matches)?data.matches:[];
+    const matches=rawMatches.filter(m=>!isPlaceSpellingMatch(m,text,places));
+    const suppressed=rawMatches.length-matches.length;
+    if(!matches.length){
+      grammarStatus.textContent=suppressed?`✓ No grammar or style issues found. ${suppressed} recognized place-name spelling result${suppressed===1?' was':'s were'} ignored.`:'✓ No grammar, spelling or style issues were found.';
+      grammarResults.innerHTML='<div class="note">Your text looks good.</div>';grammarCopy.disabled=false;
+    }else{
+      grammarStatus.textContent=`Found ${matches.length} issue${matches.length===1?'':'s'}${suppressed?` (${suppressed} place-name spelling result${suppressed===1?'':'s'} ignored)`:''}. Click a suggested replacement to apply it.`;
+      grammarResults.innerHTML=matches.map((m,i)=>{
+        const original=text.slice(m.offset,m.offset+m.length);
+        const reps=(m.replacements||[]).slice(0,5).map(r=>`<button class="grammar-suggestion" data-index="${i}" data-value="${escapeHtml(r.value)}">${escapeHtml(r.value)}</button>`).join('');
+        return `<div class="grammar-result"><div class="grammar-result-top"><b>${escapeHtml(m.rule?.category?.name||m.rule?.description||'Writing issue')}</b><span class="grammar-quote">${escapeHtml(original||'text')}</span></div><p>${escapeHtml(m.message||'Suggested correction')}</p>${reps?`<div class="grammar-suggestions">${reps}</div>`:'<p>No replacement suggestion available.</p>'}</div>`;
+      }).join('');
+      grammarCopy.disabled=false;
+      grammarResults.querySelectorAll('.grammar-suggestion').forEach(btn=>btn.onclick=()=>{
+        const i=Number(btn.dataset.index),m=matches[i],value=btn.dataset.value;
+        grammarText.value=grammarText.value.slice(0,m.offset)+value+grammarText.value.slice(m.offset+m.length);
+        updateGrammarCount();grammarStatus.textContent='Suggestion applied. Run Check Grammar again to review the updated text.';grammarCopy.disabled=false;
+      });
+    }
+    grammarProgress.style.width='100%';setTimeout(()=>grammarProgress.parentElement.classList.remove('active'),400);
+  }catch(e){console.error(e);grammarStatus.textContent=`Could not check the text. ${e.message||'Please try again.'}`;grammarProgress.parentElement.classList.remove('active')}
+  finally{grammarBtn.disabled=!grammarText.value.trim();grammarClear.disabled=false}
+};
 grammarCopy.onclick=async()=>{try{await navigator.clipboard.writeText(grammarText.value);grammarStatus.textContent='Corrected text copied to clipboard.'}catch(e){grammarStatus.textContent='Could not copy the text. Please copy it manually.'}};
 
 /* Text tools */
