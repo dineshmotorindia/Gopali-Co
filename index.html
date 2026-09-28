@@ -28,6 +28,7 @@ footer{text-align:center;padding:30px;color:var(--muted);border-top:1px solid va
 </style>
 <script src="https://unpkg.com/mediabunny@1.60.0/dist/bundles/mediabunny.cjs"></script>
 <script src="https://unpkg.com/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gif.js@0.2.0/dist/gif.min.js"></script>
 </head>
 <body>
 
@@ -55,9 +56,9 @@ footer{text-align:center;padding:30px;color:var(--muted);border-top:1px solid va
 </div></div>
 <div class="cat"><button class="head" onclick="toggle(this)">Video Tools <span>⌄</span></button><div class="list">
 <button class="tool" onclick="openTool('gifmp4')">GIF to MP4 Converter →</button>
+<button class="tool" onclick="openTool('mp4gif')">MP4 to GIF Converter →</button>
 <button class="tool" onclick="openTool('videoinfo')">Video Info / Metadata →</button>
 <button class="tool" onclick="openTool('videotimer')">Video Duration Calculator →</button>
-<button class="tool" onclick="openTool('yttool')">YouTube Video Tools →</button>
 </div></div>
 <div class="cat"><button class="head" onclick="toggle(this)">Social Media <span>⌄</span></button><div class="list">
 <button class="tool" onclick="openTool('charcount')">Caption / Character Counter →</button>
@@ -147,15 +148,27 @@ footer{text-align:center;padding:30px;color:var(--muted);border-top:1px solid va
 <div class="row"><button class="btn blue" id="gifBtn" disabled>Convert to MP4</button></div>
 <div class="progress gif-progress"><i id="gifProgress"></i></div><div id="gifStatus" class="note gif-status">Choose a GIF to begin.</div></div></section>
 
-<!-- YOUTUBE VIDEO TOOLS -->
-<section class="page" id="yttool">
+<!-- MP4 TO GIF -->
+<section class="page" id="mp4gif">
 <button class="back" onclick="home()">← Back to Essentials</button>
-<div class="panel">
-<h2>YouTube Video Tools</h2>
-<p class="desc">Paste a YouTube URL to validate it, open it, and generate its official embed URL. Direct downloading of arbitrary YouTube videos is not included because YouTube's Terms restrict downloading content except where expressly permitted by the service or rights holder.</p>
-<div class="field" style="margin-top:18px"><label>YouTube URL</label><input id="ytUrl" style="width:100%;padding:13px;border:1px solid var(--line);border-radius:10px;font:inherit" placeholder="https://www.youtube.com/watch?v=..."></div>
-<div class="row"><button class="btn blue" onclick="processYT()">Check Video</button><button class="btn light" onclick="clearYT()">Clear</button></div>
-<div id="ytResult" style="margin-top:20px"></div>
+<div class="panel"><h2>MP4 to GIF Converter</h2><p class="desc">Convert a video clip into an animated GIF directly in your browser. No upload, no server processing, and no FFmpeg.</p>
+<label class="drop" id="mp4gifDrop" for="mp4gifFile">
+<input id="mp4gifFile" type="file" accept="video/mp4,video/webm,video/quicktime,.mp4,.webm,.mov,.m4v">
+<div class="upload-badge">MP4</div>
+<div class="upload-copy"><strong>Drop your video here</strong><span>MP4, WebM and MOV · conversion stays on your device</span></div>
+<div class="upload-action">Choose Video</div>
+</label>
+<div class="gif-meta" id="mp4gifMeta">Choose a video to begin.</div>
+<div class="controls">
+<div class="field"><label>Start time (seconds)</label><input id="mp4gifStart" type="number" min="0" step="0.1" value="0"></div>
+<div class="field"><label>End time (seconds)</label><input id="mp4gifEnd" type="number" min="0" step="0.1" placeholder="Video end"></div>
+<div class="field"><label>Frame rate</label><select id="mp4gifFps"><option value="5">5 FPS — Smaller</option><option value="10" selected>10 FPS — Recommended</option><option value="15">15 FPS — Smoother</option><option value="20">20 FPS — Larger</option></select></div>
+<div class="field"><label>GIF width</label><select id="mp4gifWidth"><option value="320">320 px — Small</option><option value="480" selected>480 px — Recommended</option><option value="640">640 px — Large</option><option value="auto">Original width</option></select></div>
+<div class="field"><label>Quality <b id="mp4gifQualityVal">10</b></label><input id="mp4gifQuality" type="range" min="1" max="20" value="10"><small style="color:var(--muted)">Lower number = better quality</small></div>
+<div class="field"><label>Loop</label><select id="mp4gifLoop"><option value="0" selected>Forever</option><option value="-1">Play once</option></select></div>
+</div>
+<div class="row"><button class="btn blue" id="mp4gifBtn" disabled>Convert to GIF</button></div>
+<div class="progress"><i id="mp4gifProgress"></i></div><div id="mp4gifStatus" class="note">Choose a video to begin.</div>
 </div></section>
 
 <!-- VIDEO INFO -->
@@ -482,6 +495,80 @@ $('gifBtn').onclick=async()=>{
   }finally{
     btn.disabled=false;
   }
+};
+
+/* MP4 -> GIF — local video frame capture + gif.js encoder */
+let mp4gifSelected=null, mp4gifVideoUrl=null, mp4gifWorkerUrl=null, mp4gifWorkerPromise=null;
+function handleMp4Gif(files){
+ const f=files&&files[0]; if(!f)return;
+ mp4gifSelected=f; $('mp4gifBtn').disabled=false;
+ if(mp4gifVideoUrl)URL.revokeObjectURL(mp4gifVideoUrl);
+ mp4gifVideoUrl=URL.createObjectURL(f);
+ const v=document.createElement('video'); v.preload='metadata'; v.muted=true; v.playsInline=true;
+ v.onloadedmetadata=()=>{
+   const d=Number.isFinite(v.duration)?v.duration:0;
+   $('mp4gifStart').value='0'; $('mp4gifEnd').value=d.toFixed(2);
+   $('mp4gifMeta').textContent=`Selected: ${f.name} · ${(f.size/1024/1024).toFixed(2)} MB · ${v.videoWidth}×${v.videoHeight}px · ${d.toFixed(2)} seconds`;
+   URL.revokeObjectURL(v.src); v.remove();
+ };
+ v.onerror=()=>{$('mp4gifMeta').textContent='The browser could not read this video. Try MP4/H.264 in Chrome or Edge.';URL.revokeObjectURL(v.src);v.remove()};
+ v.src=mp4gifVideoUrl;
+}
+setupDrop('mp4gifDrop','mp4gifFile',handleMp4Gif);
+$('mp4gifQuality').oninput=()=>$('mp4gifQualityVal').textContent=$('mp4gifQuality').value;
+
+async function getGifWorkerUrl(){
+ if(mp4gifWorkerUrl)return mp4gifWorkerUrl;
+ if(!mp4gifWorkerPromise){
+   mp4gifWorkerPromise=fetch('https://cdn.jsdelivr.net/npm/gif.js@0.2.0/dist/gif.worker.js',{cache:'force-cache'})
+    .then(r=>{if(!r.ok)throw new Error('Could not load the GIF encoder worker.');return r.blob()})
+    .then(b=>{mp4gifWorkerUrl=URL.createObjectURL(b);return mp4gifWorkerUrl});
+ }
+ return mp4gifWorkerPromise;
+}
+function waitVideoEvent(video,event){return new Promise((resolve,reject)=>{const ok=()=>{cleanup();resolve()};const bad=()=>{cleanup();reject(new Error('The browser could not decode this video frame.'))};const cleanup=()=>{video.removeEventListener(event,ok);video.removeEventListener('error',bad)};video.addEventListener(event,ok,{once:true});video.addEventListener('error',bad,{once:true})})}
+async function seekVideo(video,time){
+ if(Math.abs(video.currentTime-time)<0.01)return;
+ const p=waitVideoEvent(video,'seeked'); video.currentTime=time; await p;
+}
+$('mp4gifBtn').onclick=async()=>{
+ if(!mp4gifSelected)return;
+ const btn=$('mp4gifBtn'),bar=$('mp4gifProgress'),status=$('mp4gifStatus'); btn.disabled=true;bar.style.width='0%';
+ let video=null, url=null;
+ try{
+  if(typeof GIF==='undefined')throw new Error('The GIF encoder could not load. Refresh the page and try again.');
+  status.textContent='Reading video…';bar.style.width='3%';
+  url=URL.createObjectURL(mp4gifSelected); video=document.createElement('video');
+  video.preload='auto';video.muted=true;video.playsInline=true;
+  if(video.readyState<1){const metadataPromise=waitVideoEvent(video,'loadedmetadata');video.src=url;await metadataPromise}else{video.src=url}
+  const duration=video.duration;
+  let start=Math.max(0,Number($('mp4gifStart').value)||0);
+  let end=Number($('mp4gifEnd').value); if(!Number.isFinite(end)||end<=0)end=duration;
+  if(start>=end)throw new Error('End time must be greater than start time.');
+  end=Math.min(end,duration);
+  if(end-start>30)throw new Error('For browser GIF conversion, please keep the selected clip to 30 seconds or less.');
+  const fps=Math.max(1,Math.min(20,Number($('mp4gifFps').value)||10));
+  const totalFrames=Math.floor((end-start)*fps)+1;
+  if(totalFrames>600)throw new Error('This clip would create more than 600 GIF frames. Lower the FPS or shorten the clip.');
+  const requestedWidth=$('mp4gifWidth').value==='auto'?video.videoWidth:Number($('mp4gifWidth').value);
+  const outW=Math.max(2,Math.min(video.videoWidth,requestedWidth));
+  const outH=Math.max(2,Math.round(video.videoHeight*(outW/video.videoWidth)));
+  const canvas=document.createElement('canvas');canvas.width=outW;canvas.height=outH;const ctx=canvas.getContext('2d',{willReadFrequently:false});
+  if(!ctx)throw new Error('Could not create the GIF canvas.');
+  status.textContent=`Preparing ${totalFrames} frames at ${fps} FPS…`;bar.style.width='5%';
+  const workerScript=await getGifWorkerUrl();
+  const gif=new GIF({workers:Math.min(4,Math.max(2,navigator.hardwareConcurrency?Math.floor(navigator.hardwareConcurrency/2):2)),quality:Number($('mp4gifQuality').value),width:outW,height:outH,repeat:Number($('mp4gifLoop').value),workerScript});
+  const delay=Math.max(20,Math.round(1000/fps));
+  for(let i=0;i<totalFrames;i++){
+    const t=Math.min(end,start+i/fps); await seekVideo(video,t); ctx.drawImage(video,0,0,outW,outH); gif.addFrame(canvas,{copy:true,delay});
+    bar.style.width=`${5+Math.round(((i+1)/totalFrames)*70)}%`; status.textContent=`Capturing frame ${i+1} of ${totalFrames}…`;
+  }
+  status.textContent='Encoding GIF…';bar.style.width='78%';
+  const blob=await new Promise((resolve,reject)=>{gif.on('progress',p=>{bar.style.width=`${78+Math.round(p*20)}%`;status.textContent=`Encoding GIF… ${Math.round(p*100)}%`});gif.on('finished',resolve);gif.on('abort',()=>reject(new Error('GIF encoding was cancelled.')));gif.render()});
+  if(!blob||blob.size<100)throw new Error('The GIF output was empty.');
+  dl(blob,`${mp4gifSelected.name.replace(/\.[^.]+$/,'')||'converted-video'}.gif`);bar.style.width='100%';status.textContent=`Done — ${totalFrames} frames converted to GIF and downloaded.`;
+ }catch(e){console.error('MP4 → GIF error:',e);bar.style.width='0%';status.textContent=e?.message||'MP4 to GIF conversion failed.'}
+ finally{if(video){video.pause();video.removeAttribute('src');video.load();video.remove()}if(url)URL.revokeObjectURL(url);btn.disabled=false}
 };
 
 /* Video tools */
