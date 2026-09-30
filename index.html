@@ -90,12 +90,13 @@ body{background:#f4f7fc;color:#0b1832}
 </section>
 
 <section class="wrap tools-home" id="tools">
-  <div class="section-title home-title"><div><div class="mini-kicker">WORKSPACE</div><h2>Choose your tools</h2><p>Click a category to explore everything inside.</p></div><div class="tool-count">12 tools <span>available now</span></div></div>
+  <div class="section-title home-title"><div><div class="mini-kicker">WORKSPACE</div><h2>Choose your tools</h2><p>Click a category to explore everything inside.</p></div><div class="tool-count">13 tools <span>available now</span></div></div>
   <div class="grid home-grid">
     <div class="cat home-cat image-cat open">
-      <button class="head" onclick="toggle(this)"><span class="cat-left"><span class="cat-icon blue-icon">▧</span><span><b>Image Tools</b><small>Resize, compress, convert and work with images.</small></span></span><span class="cat-right"><em>5 Tools</em><strong class="arrow">↗</strong></span></button>
+      <button class="head" onclick="toggle(this)"><span class="cat-left"><span class="cat-icon blue-icon">▧</span><span><b>Image Tools</b><small>Resize, compress, convert and work with images.</small></span></span><span class="cat-right"><em>6 Tools</em><strong class="arrow">↗</strong></span></button>
       <div class="list">
         <button class="tool" onclick="openTool('pdfjpeg')"><span>PDF → JPEG</span><b>→</b></button>
+        <button class="tool" onclick="openTool('pdfcompress')"><span>PDF Size Compressor</span><b>→</b></button>
         <button class="tool" onclick="openTool('jpegpdf')"><span>JPEG / PNG → PDF</span><b>→</b></button>
         <button class="tool" onclick="openTool('resize')"><span>Image Resizer</span><b>→</b></button>
         <button class="tool" onclick="openTool('compress')"><span>Image Size Compressor</span><b>→</b></button>
@@ -135,6 +136,19 @@ body{background:#f4f7fc;color:#0b1832}
 <label class="drop" id="pdfDrop" for="pdfFile"><input id="pdfFile" type="file" accept=".pdf,application/pdf"><div class="upload-badge">PDF</div><div class="upload-copy"><strong>Drop a PDF here or choose a file</strong><span>PDF files only · processed locally on this device</span></div><div class="upload-action">Choose PDF</div></label>
 <div class="row"><button class="btn blue" onclick="document.getElementById('pdfFile').click()">Choose PDF</button><button class="btn light" id="pdfAll" disabled>Download All</button></div>
 <div class="progress"><i id="pdfProgress"></i></div><div class="preview" id="pdfPreview"></div></div></section>
+
+<!-- PDF SIZE COMPRESSOR -->
+<section class="page" id="pdfcompress">
+<button class="back" onclick="home()">← Back to Essentials</button>
+<div class="panel"><h2>PDF Size Compressor</h2><p class="desc">Reduce PDF size directly in your browser. Pages are rendered and rebuilt as optimized images, with no upload to a server.</p>
+<label class="drop" id="pdfCompDrop" for="pdfCompFile"><input id="pdfCompFile" type="file" accept=".pdf,application/pdf"><div class="upload-badge">PDF</div><div class="upload-copy"><strong>Drop a PDF here or choose a file</strong><span>PDF files only · processed locally on this device</span></div><div class="upload-action">Choose PDF</div></label>
+<div class="controls">
+<div class="field"><label>JPEG Quality: <b id="pdfQVal">65</b>%</label><input id="pdfQuality" type="range" min="25" max="90" value="65"></div>
+<div class="field"><label>Resolution</label><select id="pdfScale"><option value="1">Low — smallest</option><option value="1.35" selected>Balanced — recommended</option><option value="1.7">High — larger file</option></select></div>
+</div>
+<div class="row"><button class="btn blue" id="pdfCompressBtn" disabled>Compress PDF</button><span class="muted" id="pdfCompInfo"></span></div>
+<div class="progress"><i id="pdfCompProgress"></i></div>
+<div class="preview" id="pdfCompPreview"></div></div></section>
 
 <!-- IMAGE INPUT TO PDF -->
 <section class="page" id="jpegpdf">
@@ -337,6 +351,50 @@ async function handlePDF(files){
  }catch(e){console.error(e);alert('PDF conversion failed. Please try another PDF or refresh the page.')}
 }
 setupDrop('pdfDrop','pdfFile',handlePDF);
+
+/* PDF Size Compressor */
+let pdfCompFile=null;
+function handlePDFCompress(files){
+ pdfCompFile=files&&files[0];
+ $('pdfCompressBtn').disabled=!pdfCompFile;
+ $('pdfCompInfo').textContent=pdfCompFile?`Original: ${(pdfCompFile.size/1024/1024).toFixed(2)} MB` : '';
+ $('pdfCompPreview').innerHTML='';$('pdfCompProgress').style.width='0';
+}
+setupDrop('pdfCompDrop','pdfCompFile',handlePDFCompress);
+$('pdfQuality').oninput=()=>{$('pdfQVal').textContent=$('pdfQuality').value};
+$('pdfCompressBtn').onclick=async()=>{
+ if(!pdfCompFile)return;
+ const btn=$('pdfCompressBtn');btn.disabled=true;btn.textContent='Compressing…';
+ try{
+  const {getDocument,GlobalWorkerOptions}=await import('https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.min.mjs');
+  GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.worker.min.mjs';
+  const pdf=await getDocument({data:await pdfCompFile.arrayBuffer()}).promise;
+  const {jsPDF}=window.jspdf||{}; if(!jsPDF)throw new Error('PDF engine unavailable');
+  const quality=+$('pdfQuality').value/100,scale=+$('pdfScale').value;
+  let doc=null;
+  for(let i=1;i<=pdf.numPages;i++){
+   const page=await pdf.getPage(i),v=page.getViewport({scale}),c=document.createElement('canvas');
+   c.width=Math.ceil(v.width);c.height=Math.ceil(v.height);
+   const ctx=c.getContext('2d',{alpha:false});ctx.fillStyle='#fff';ctx.fillRect(0,0,c.width,c.height);
+   await page.render({canvasContext:ctx,viewport:v,background:'white'}).promise;
+   const jpeg=c.toDataURL('image/jpeg',quality);
+   const ptW=v.width*72/scale,ptH=v.height*72/scale;
+   const orientation=ptW>ptH?'l':'p';
+   if(!doc)doc=new jsPDF({orientation,unit:'pt',format:[ptW,ptH],compress:true});
+   else doc.addPage([ptW,ptH],orientation);
+   doc.addImage(jpeg,'JPEG',0,0,ptW,ptH,undefined,'FAST');
+   $('pdfCompProgress').style.width=(i/pdf.numPages*100)+'%';
+  }
+  const out=doc.output('blob');
+  const old=pdfCompFile.size,newSize=out.size,save=Math.max(0,100-(newSize/old*100));
+  $('pdfCompInfo').innerHTML=`Original: ${(old/1024/1024).toFixed(2)} MB · Compressed: ${(newSize/1024/1024).toFixed(2)} MB · <b>${save.toFixed(0)}% smaller</b>`;
+  const d=document.createElement('div');d.className='thumb';d.innerHTML='<div class="upload-badge">PDF</div><small>Compressed PDF ready</small>';
+  $('pdfCompPreview').innerHTML='';$('pdfCompPreview').appendChild(d);
+  dl(out,'compressed-pdf.pdf');
+  btn.textContent='Compressed & Downloaded ✓';
+  setTimeout(()=>{btn.textContent='Compress PDF';btn.disabled=false},1600);
+ }catch(e){console.error('PDF compression error:',e);alert('Could not compress this PDF. Please try another PDF.');btn.textContent='Compress PDF';btn.disabled=false;}
+};
 
 /* Images -> PDF */
 let selectedImages=[];
@@ -687,63 +745,105 @@ let grammarData=null;
 let placeNames=null;
 let placeNamesPromise=null;
 
-// Global populated-place dictionary. It is loaded lazily only when Grammar Check is used.
-// The dataset is based on GeoNames and includes populated places down to roughly 1,000+ population,
-// giving broad coverage of cities, towns and many smaller populated places without slowing the homepage.
-const PLACE_NAMES_URL='https://cdn.jsdelivr.net/gh/joelacus/world-cities@main/world_cities.json';
+// Broad global populated-place dictionary. 1000+ population covers cities, towns and many villages.
+// We also accept alternate/city schemas so the filter keeps working if the dataset source changes shape.
+const PLACE_NAMES_URLS=[
+  'https://raw.githubusercontent.com/joelacus/world-cities/main/world_cities.json',
+  'https://cdn.jsdelivr.net/gh/joelacus/world-cities@main/world_cities.json'
+];
+
+function addPlaceValue(set,value){
+  if(typeof value!=='string') return;
+  const v=value.trim();
+  if(v.length<2) return;
+  const normalized=v.toLocaleLowerCase().replace(/[’']/g,"'").replace(/\s+/g,' ');
+  set.add(normalized);
+  // Also store a punctuation-normalized version for names such as O'Fallon / Saint-Denis.
+  set.add(normalized.replace(/[\u2010-\u2015-]/g,'-'));
+}
 
 async function loadPlaceNames(){
   if(placeNames) return placeNames;
   if(placeNamesPromise) return placeNamesPromise;
   placeNamesPromise=(async()=>{
-    try{
-      const res=await fetch(PLACE_NAMES_URL,{cache:'force-cache'});
-      if(!res.ok) throw new Error('Place-name dictionary could not be loaded.');
-      const data=await res.json();
-      const set=new Set();
-      if(Array.isArray(data)){
-        for(const item of data){
-          for(const value of [item?.name,item?.asciiname]){
-            if(typeof value==='string' && value.trim().length>1) set.add(value.trim().toLocaleLowerCase());
+    const set=new Set();
+    for(const url of PLACE_NAMES_URLS){
+      try{
+        const res=await fetch(url,{cache:'force-cache',mode:'cors'});
+        if(!res.ok) continue;
+        const data=await res.json();
+        if(Array.isArray(data)){
+          for(const item of data){
+            for(const key of ['name','asciiname','city','city_ascii','place_name']) addPlaceValue(set,item?.[key]);
+            // Some datasets provide alternate names as an array or object.
+            const alts=item?.altnames||item?.alternatenames||item?.alternate_names;
+            if(Array.isArray(alts)) alts.forEach(v=>addPlaceValue(set,v));
+            else if(alts&&typeof alts==='object') Object.values(alts).flat?.().forEach(v=>addPlaceValue(set,v));
           }
         }
-      }
-      placeNames=set;
-      return set;
-    }catch(e){
-      console.warn('Place-name dictionary unavailable:',e);
-      placeNames=new Set();
-      return placeNames;
+        if(set.size) break;
+      }catch(e){ console.warn('Place dictionary source unavailable:',url,e); }
     }
+    placeNames=set;
+    return set;
   })();
   return placeNamesPromise;
 }
 
-function isPlaceSpellingMatch(match,text,set){
-  // Only suppress spelling/typo findings. Genuine grammar and style issues remain visible.
+function normalizePlace(s){
+  return String(s||'').trim().toLocaleLowerCase().replace(/[’']/g,"'").replace(/\s+/g,' ');
+}
+
+function isSpellingLike(match){
   const issue=String(match?.rule?.issueType||'').toLowerCase();
   const category=String(match?.rule?.category?.id||'').toLowerCase();
-  const isSpelling=issue==='misspelling'||issue==='typographical'||category==='typos';
-  if(!isSpelling || !set?.size) return false;
+  const ruleId=String(match?.rule?.id||'').toLowerCase();
+  return issue==='misspelling'||issue==='typographical'||category==='typos'||category==='spelling'||ruleId.includes('spell');
+}
+
+function isPlaceSpellingMatch(match,text,set){
+  if(!isSpellingLike(match)) return false;
   const original=text.slice(match.offset,match.offset+match.length).trim();
   if(!original) return false;
-  const normalized=original.toLocaleLowerCase().replace(/[’']/g,"'").replace(/\s+/g,' ');
-  if(set.has(normalized)) return true;
+  const normalized=normalizePlace(original);
+  if(set?.has(normalized)) return true;
   const stripped=normalized.replace(/^[^\p{L}\p{N}]+|[^\p{L}\p{N}]+$/gu,'');
-  return stripped!==normalized && set.has(stripped);
+  if(set?.has(stripped)) return true;
+
+  // Multi-word place: if LanguageTool only flags one word inside a known place name,
+  // check a small window around the match for a matching full place name.
+  if(set?.size){
+    const before=text.slice(Math.max(0,match.offset-45),match.offset);
+    const after=text.slice(match.offset+match.length,Math.min(text.length,match.offset+match.length+45));
+    const context=(before+' '+original+' '+after).replace(/\s+/g,' ');
+    const words=context.match(/[\p{L}\p{N}][\p{L}\p{N}'’.-]*/gu)||[];
+    const target=normalizePlace(original);
+    for(let i=0;i<words.length;i++){
+      if(normalizePlace(words[i])!==target) continue;
+      for(let n=2;n<=5;n++){
+        const a=Math.max(0,i-n+1), candidate=normalizePlace(words.slice(a,i+1).join(' '));
+        if(set.has(candidate)) return true;
+        for(let end=i+1;end<Math.min(words.length,i+3);end++){
+          const c=normalizePlace(words.slice(a,end+1).join(' '));
+          if(set.has(c)) return true;
+        }
+      }
+    }
+  }
+  return false;
 }
 
 function updateGrammarCount(){grammarCount.textContent=`${grammarText.value.length.toLocaleString()} characters`;grammarBtn.disabled=!grammarText.value.trim()}
 grammarText.oninput=updateGrammarCount;
 grammarClear.onclick=()=>{grammarText.value='';grammarResults.innerHTML='';grammarData=null;grammarCopy.disabled=true;grammarStatus.textContent='Ready to check. Your text is sent to LanguageTool only when you click “Check Grammar”.';grammarProgress.style.width='0';updateGrammarCount()}; updateGrammarCount();
-function escapeHtml(v){return String(v??'').replace(/[&<>\"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;'}[c]||c))}
+function escapeHtml(v){return String(v??'').replace(/[&<>\"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\\':'\\'}[c]||c))}
 function correctedTextFromMatches(text,matches){let out=text;[...matches].sort((a,b)=>b.offset-a.offset).forEach(m=>{if(m.replacements&&m.replacements[0])out=out.slice(0,m.offset)+m.replacements[0].value+out.slice(m.offset+m.length)});return out}
 
 grammarBtn.onclick=async()=>{
   const text=grammarText.value.trim();
   if(!text)return;
   if(text.length>20000){grammarStatus.textContent='Please keep the text under 20,000 characters.';return;}
-  grammarBtn.disabled=true;grammarClear.disabled=true;grammarCopy.disabled=true;grammarResults.innerHTML='';grammarProgress.parentElement.classList.add('active');grammarProgress.style.width='10%';grammarStatus.textContent='Checking grammar and recognizing place names…';
+  grammarBtn.disabled=true;grammarClear.disabled=true;grammarCopy.disabled=true;grammarResults.innerHTML='';grammarProgress.parentElement.classList.add('active');grammarProgress.style.width='10%';grammarStatus.textContent='Checking grammar and recognizing global place names…';
   try{
     const placesPromise=loadPlaceNames();
     const body=new URLSearchParams();body.set('text',text);body.set('language',$('grammarLang').value);
@@ -760,7 +860,7 @@ grammarBtn.onclick=async()=>{
       grammarStatus.textContent=suppressed?`✓ No grammar or style issues found. ${suppressed} recognized place-name spelling result${suppressed===1?' was':'s were'} ignored.`:'✓ No grammar, spelling or style issues were found.';
       grammarResults.innerHTML='<div class="note">Your text looks good.</div>';grammarCopy.disabled=false;
     }else{
-      grammarStatus.textContent=`Found ${matches.length} issue${matches.length===1?'':'s'}${suppressed?` (${suppressed} place-name spelling result${suppressed===1?'':'s'} ignored)`:''}. Click a suggested replacement to apply it.`;
+      grammarStatus.textContent=`Found ${matches.length} issue${matches.length===1?'':'s'}${suppressed?` (${suppressed} recognized place-name spelling result${suppressed===1?'':'s'} ignored)`:''}. Click a suggested replacement to apply it.`;
       grammarResults.innerHTML=matches.map((m,i)=>{
         const original=text.slice(m.offset,m.offset+m.length);
         const reps=(m.replacements||[]).slice(0,5).map(r=>`<button class="grammar-suggestion" data-index="${i}" data-value="${escapeHtml(r.value)}">${escapeHtml(r.value)}</button>`).join('');
@@ -779,16 +879,6 @@ grammarBtn.onclick=async()=>{
 };
 grammarCopy.onclick=async()=>{try{await navigator.clipboard.writeText(grammarText.value);grammarStatus.textContent='Corrected text copied to clipboard.'}catch(e){grammarStatus.textContent='Could not copy the text. Please copy it manually.'}};
 
-/* Text tools */
-$('countText').oninput=()=>{let t=$('countText').value,words=t.trim()?t.trim().split(/\s+/).length:0,lines=t?t.split(/\n/).length:0;$('countOut').textContent=`Words: ${words} · Characters: ${t.length} · Characters without spaces: ${t.replace(/\s/g,'').length} · Lines: ${lines}`};
-function buildUTM(){let u=$('utmUrl').value.trim();if(!u)return;let x=new URL(u);[['utm_source',$('utmSource').value],['utm_medium',$('utmMedium').value],['utm_campaign',$('utmCampaign').value],['utm_content',$('utmContent').value]].forEach(([k,v])=>v&&x.searchParams.set(k,v));$('utmOut').textContent=x.toString()}
-function makeSlug(){$('slugOut').textContent=$('slugIn').value.toLowerCase().trim().normalize('NFKD').replace(/[^\w\s-]/g,'').replace(/[\s_]+/g,'-').replace(/-+/g,'-').replace(/^-|-$/g,'')}
-function convertCase(t){let x=$('caseIn'),s=x.value;if(t==='upper')x.value=s.toUpperCase();else if(t==='lower')x.value=s.toLowerCase();else x.value=s.toLowerCase().replace(/\b\w/g,c=>c.toUpperCase())}
-$('readIn').oninput=()=>{let n=$('readIn').value.trim().split(/\s+/).filter(Boolean).length; $('readOut').textContent=`Words: ${n} · Estimated reading time: ${Math.max(0.1,n/200).toFixed(1)} min`}
-function copyText(id){navigator.clipboard.writeText($(id).textContent||$(id).value||'')}
-function calcROI(){let r=+$('roiReturn').value,c=+$('roiCost').value;$('roiOut').textContent=c?`ROI: ${((r-c)/c*100).toFixed(2)}% · Gain/Loss: ${(r-c).toFixed(2)}`:'Enter an investment.'}
-function calcPrice(){let p=+$('price').value,d=+$('discount').value||0,g=+$('gst').value||0,after=p*(1-d/100),final=after*(1+g/100);$('priceOut').textContent=`After discount: ₹${after.toFixed(2)} · After GST: ₹${final.toFixed(2)}`}
-function makeQR(){let v=encodeURIComponent($('qrIn').value.trim());if(!v)return;$('qrOut').innerHTML=`<img alt="QR code" style="width:260px;max-width:100%" src="https://api.qrserver.com/v1/create-qr-code/?size=500x500&data=${v}"><div class="note">QR image is generated by a public QR API. Do not use it for confidential data.</div>`}
 </script>
 </body>
 </html>
