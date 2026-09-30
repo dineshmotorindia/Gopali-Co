@@ -1058,10 +1058,21 @@ async function getWhisper(status, lang='auto'){
   if(whisperLoading)return whisperLoading;
   whisperLoading=(async()=>{
     status.textContent='Loading Whisper Base… first use downloads the speech model and caches it in your browser. Base is slower than Tiny but substantially better for real speech and interviews.';
-    const {pipeline}=await import('https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.8.1/+esm');
+    const {pipeline,env}=await import('https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.8.1/+esm');
     const model=key==='en'?'onnx-community/whisper-base.en':'onnx-community/whisper-base';
-    try{whisperPipe=await pipeline('automatic-speech-recognition',model,{device:'webgpu'});}
-    catch(e){console.warn('WebGPU Whisper unavailable; falling back to WASM.',e);whisperPipe=await pipeline('automatic-speech-recognition',model);}
+    // Explicit WASM/CPU mode is used for reliability. Some Chrome installations
+    // expose WebGPU but cannot obtain a GPU adapter, which causes a hard
+    // 'no available backend found' error instead of a usable fallback.
+    try{
+      if(env?.backends?.onnx?.wasm){
+        env.backends.onnx.wasm.numThreads=1;
+        env.backends.onnx.wasm.simd=true;
+      }
+      whisperPipe=await pipeline('automatic-speech-recognition',model,{device:'wasm'});
+    }catch(e){
+      console.error('Whisper WASM backend failed.',e);
+      throw new Error('Whisper could not start the browser CPU backend. Please run this page from GitHub Pages/HTTPS rather than file://. Details: '+(e?.message||e));
+    }
     whisperModelKey=key;
     return whisperPipe;
   })();
